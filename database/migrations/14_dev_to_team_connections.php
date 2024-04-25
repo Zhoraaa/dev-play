@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tags', function (Blueprint $table) {
+        Schema::create('dev_to_team_connections', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('developer_id')->constrained('users');
+            $table->foreignId('team_id')->constrained('dev_teams');
+            $table->string('role_name');
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tags');
+        Schema::dropIfExists('dev_to_team_connections');
     }
 };

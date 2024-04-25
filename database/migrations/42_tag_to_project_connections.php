@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dev_teams', function (Blueprint $table) {
+        Schema::create('tag_to_project_connections', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('project_id')->constrained('projects');
+            $table->foreignId('tag_id')->constrained('tags');
         });
     }
 
@@ -22,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dev_teams');
+        Schema::dropIfExists('tag_to_project_connections');
     }
 };
