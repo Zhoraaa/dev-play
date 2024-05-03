@@ -18,10 +18,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('avatar');
-            $table->string('url');
-            $table->foreignId('role_id')->constrained('roles');
-            $table->boolean('banned');
+            $table->string('avatar')->nullable();
+            $table->foreignId('role_id')->constrained('roles')->default(1);
+            $table->boolean('banned')->default('0');
             $table->rememberToken();
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
