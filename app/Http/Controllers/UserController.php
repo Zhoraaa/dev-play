@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -75,7 +76,7 @@ class UserController extends Controller
             return redirect()->route('userpage', ['login' => $logindata->login])->with('success', 'Добро пожаловать, ' . $logindata->login . '!');
         }
 
-        return view('userpage')->with('error', 'Неизестная ошибка, ' . $logindata->login . '!');
+        return redirect()->back()->with('error', 'Ошибка авторизации.');
     }
     public function logout()
     {
@@ -91,8 +92,16 @@ class UserController extends Controller
 
         return view('home')->with('success', '');
     }
-    public function destroy()
+    public function destroy(Request $request)
     {
-        //
+        $user = User::where('login', Auth::user()->login)->first();
+
+        if (Hash::check($request->password, $user->password)) {
+            $user->delete();
+
+            return redirect()->route('home')->with('success', 'Страница удалена. Спасибо что были с нами!');
+        }
+
+        return redirect()->back()->with('error', 'Страница не удалена.');
     }
 }
