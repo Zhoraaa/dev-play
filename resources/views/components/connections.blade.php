@@ -15,3 +15,4 @@
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 {{-- Local JS --}}
 <script src="{{ asset('js/fade-out-msgs.js') }}"></script>
+<script src="{{ asset('js/textarea-btns.js') }}"></script>

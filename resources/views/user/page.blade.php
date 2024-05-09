@@ -5,6 +5,22 @@
         $string =
             isset(auth()->user()->id) && auth()->user()->id === $userdata->id ? 'Личный кабинет' : $userdata->login;
         $canedit = isset(auth()->user()->id) && auth()->user()->id === $userdata->id ? true : false;
+
+        switch ($userdata->role_id) {
+            case 2:
+                $namestyle = 'success';
+                break;
+            case 3:
+                $namestyle = 'warning';
+                break;
+            case 4:
+                $namestyle = 'danger';
+                break;
+
+            default:
+                $namestyle = 'black';
+                break;
+        }
     @endphp
 @else
     @php
@@ -20,13 +36,16 @@
     @section('body')
         <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
             <div class="d-flex justify-content-between mb-2">
-                <h2>
+                <h2 class="text-{{ $namestyle }}">
                     {{ $userdata->login }}
                 </h2>
                 @if ($canedit)
-                    <a href="" class="btn btn-warning p-2 pr-3 pl-3">Редактировать информацию</a>
-                    <button class="btn btn-danger p-2 pr-3 pl-3" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
-                        аккаунт</button>
+                    <div>
+                        <a href="{{ route('userEditor', ['login' => auth()->user()->login]) }}"
+                            class="btn btn-warning">Редактировать информацию</a>
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
+                            аккаунт</button>
+                    </div>
                     <!-- Модалька подтверждения -->
                     <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel"
                         aria-hidden="true">
@@ -59,12 +78,15 @@
             </div>
             <div class="d-flex justify-content-between mb-2">
                 <p class="text-secondary">
-                    На сайте с:
+                    {{ $userdata->role }} зарегестрирован...
                 </p>
                 <span>
-                    {{ $userdata->created_at }}
+                    {!! $userdata->created_at !!}
                 </span>
             </div>
+            <p>
+                {!! $userdata->about !!}
+            </p>
         </div>
     @endsection
 @endif
