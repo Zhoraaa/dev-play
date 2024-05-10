@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('title')
-    Регистрация
+    Авторизация
 @endsection
 
 @section('body')
