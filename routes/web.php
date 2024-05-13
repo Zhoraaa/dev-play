@@ -25,11 +25,13 @@ Route::get('/auth', function () {
 Route::get('/reg', function () {
     return view('user.reg');
 })->name('reg');
-Route::post('/signUp', [UserController::class, 'create'])->name('signUp');
-Route::post('/signIn', [UserController::class, 'login'])->name('signIn');
-Route::get('/signOut', [UserController::class, 'logout'])->name('signOut');
+Route::post('/signUp', [UserController::class, 'create'])->middleware('guest')->name('signUp');
+Route::post('/signIn', [UserController::class, 'login'])->middleware('guest')->name('signIn');
+Route::get('/signOut', [UserController::class, 'logout'])->middleware('guest')->name('signOut');
 Route::get('/user/{login}', [UserController::class, 'index'])->name('userpage');
-Route::post('/user/delete', [UserController::class, 'destroy'])->name('userdelete');
+Route::post('/user/delete', [UserController::class, 'destroy'])->middleware('auth')->name('userdelete');
+Route::get('/user/{login}/edit', [UserController::class, 'editor'])->middleware('auth')->name('userEditor');
+Route::post('/user/save', [UserController::class, 'update'])->middleware('auth')->name('userSaveChanges');
 
 // Команда разработчиков
 Route::get('/devteam', [DevTeamController::class, 'list'])->name('devTeams');
@@ -41,6 +43,5 @@ Route::get('/devteam', [DevTeamController::class, 'list'])->name('devTeams');
 // Тикеты
 
 // Админка
-Route::get('/admin/dev-tickets', [AdminController::class, 'dev-tickets'])->name('wantToBeDeveloper');
-Route::get('/admin/users', [AdminController::class, 'user-list'])->name('userList');
-Route::get('/admin/tags', [AdminController::class, 'tag-list'])->name('tagList');
+Route::get('/admin/users', [AdminController::class, 'user-list'])->middleware('auth')->name('userList');
+Route::get('/admin/tags', [AdminController::class, 'tag-list'])->middleware('auth')->name('tagList');

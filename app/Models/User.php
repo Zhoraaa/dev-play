@@ -25,6 +25,7 @@ class User extends Authenticatable
         'url',
         'role_id',
         'banned',
+        'about',
     ];
 
     public $timestamps = false;

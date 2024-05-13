@@ -11,6 +11,18 @@
             </p>
         </div>
     @endif
+    @if (session('warning'))
+        <div class="mb-2 p-3 alert alert-warning border border-warning rounded server-message">
+            <div class="d-flex align-items-center justify-content-between">
+                <h6 class="mb-0">Предупреждение</h6>
+                <button class="btn-close close-server-message"></button>
+            </div>
+            <hr>
+            <p>
+                {!! session('warning') !!}
+            </p>
+        </div>
+    @endif
     @if (session('error'))
         <div class="mb-2 p-3 alert alert-danger border border-danger rounded server-message">
             <div class="d-flex align-items-center justify-content-between">

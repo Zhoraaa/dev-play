@@ -20,6 +20,8 @@
         <a href="{{ route('devTeams') }}" class="m-1 btn btn-outline-primary">Команды разработчиков</a>
         <hr>
         {{-- Ссылки пользователей --}}
+        <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}"
+            class="m-1 btn btn-outline-primary">Личный кабинет</a>
         @auth
             @if (auth()->user()->role_id == 1)
                 <button class="m-1 btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#beDeveloper">Стать
@@ -55,8 +57,6 @@
                     команды</a>
             @endif
             @if (auth()->user()->role_id >= 3)
-                <a href="{{ route('wantToBeDeveloper') }}" class="m-1 btn btn-outline-primary">Заявки на права
-                    разработчика</a>
                 <a href="{{ route('userList') }}" class="m-1 btn btn-outline-primary">Пользователи</a>
                 <a href="{{ route('tagList') }}" class="m-1 btn btn-outline-primary">Список тегов</a>
             @endif
