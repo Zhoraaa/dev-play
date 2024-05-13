@@ -7,10 +7,9 @@
 
 @section('body')
     <div class="m-auto w-75 mt-3">
-        <a href="{{ route('userpage', ['login' => $userdata->login]) }}" style="text-decoation: none">← Вернуться в личный
-            кабинет</a>
+        <a href="{{ route('userpage', ['login'=>auth()->user()->login]) }}" class="d-block mt-3 btn btn-secondary">← Назад в личный кабинет</a>
     </div>
-    <form action="{{route('userSaveChanges')}}" method="POST" enctype="multipart/form-data" class="m-auto mt-3 w-75">
+    <form action="{{ route('userSaveChanges') }}" method="POST" enctype="multipart/form-data" class="m-auto mt-3 w-75">
         @csrf
         <div class="row mb-3">
             <div class="col">

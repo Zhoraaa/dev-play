@@ -1,26 +1,12 @@
 @extends('layout')
 
-@if ($user_exist)
+@if ($project_exist)
     @php
         $string =
-            isset(auth()->user()->id) && auth()->user()->id === $userdata->id ? 'Личный кабинет' : $userdata->login;
-        $canedit = isset(auth()->user()->id) && auth()->user()->id === $userdata->id ? true : false;
-
-        switch ($userdata->role_id) {
-            case 2:
-                $namestyle = 'success';
-                break;
-            case 3:
-                $namestyle = 'warning';
-                break;
-            case 4:
-                $namestyle = 'danger';
-                break;
-
-            default:
-                $namestyle = 'black';
-                break;
-        }
+            isset(auth()->user()->id) && auth()->user()->id === $projectdata->id
+                ? 'Личный кабинет'
+                : $projectdata->name;
+        $canedit = isset(auth()->user()->id) && auth()->user()->id === $projectdata->author_id ? true : false;
     @endphp
 @else
     @php
@@ -32,25 +18,27 @@
     {{ $string }}
 @endsection
 
-@if ($user_exist)
+@if ($project_exist)
     @section('body')
         <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
             <div class="d-flex justify-content-between mb-2">
-                <h2 class="text-{{ $namestyle }}">
-                    {{ $userdata->login }}
+                <h2>
+                    {{ $projectdata->name }}
                 </h2>
                 @if ($canedit)
                     <div>
-                        <a href="{{route('projectNew')}}" class="btn btn-success">+ Новый проект</a>
-                        <a href="{{ route('userEditor', ['login' => auth()->user()->login]) }}"
+                        <a href="{{ route('snapshotNew', ['project' => $projectdata->url]) }}" class="btn btn-success">+ Новый
+                            снапшот</a>
+                        <a href="{{ route('projectEditor', ['url' => $projectdata->url]) }}"
                             class="btn btn-warning">Редактировать информацию</a>
                         <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
-                            аккаунт</button>
+                            проект</button>
                     </div>
                     <!-- Модалька подтверждения -->
                     <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel"
                         aria-hidden="true">
-                        <form class="modal-dialog" action="{{ route('userdelete') }}" method="POST">
+                        <form class="modal-dialog" action="{{ route('projectDelete', ['url' => $projectdata->url]) }}"
+                            method="POST">
                             @csrf
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -60,7 +48,8 @@
                                         aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    Это действие нельзя будет отменить. Все упоминания о Вас на сайте исчезнут, некоторая
+                                    Это действие нельзя будет отменить. Все упоминания о проекте на сайте исчезнут,
+                                    некоторая
                                     информация будет безвозвратно утрачена.
                                     <div class="form-floating mt-3">
                                         <input type="password" name="password" class="form-control" id="floatingPassword"
@@ -77,16 +66,24 @@
                     </div>
                 @endif
             </div>
-            <div class="d-flex justify-content-between mb-2">
+            <div class="d-flex justify-content-between">
                 <p class="text-secondary">
-                    {{ $userdata->role }} зарегестрирован...
+                    Проект создан:
                 </p>
                 <span>
-                    {!! $userdata->created_at !!}
+                    {!! $projectdata->created_at_formatted !!}
+                </span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <p class="text-secondary">
+                    Последнее обновление:
+                </p>
+                <span>
+                    {!! $projectdata->updated_at_formatted !!}
                 </span>
             </div>
             <p>
-                {!! $userdata->about !!}
+                {!! $projectdata->description !!}
             </p>
         </div>
     @endsection

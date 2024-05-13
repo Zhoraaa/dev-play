@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DevTeamController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,8 +18,12 @@ Route::get('/', function () {
 Route::get('/news', [PageController::class, 'news'])->name('news');
 Route::get('/projects', [PageController::class, 'projects'])->name('projects');
 Route::get('/devteams', [PageController::class, 'devTeams'])->name('devTeams');
+Route::get('/rules/publication', function () {
+    return view('rules.publication');
+})->name('publicationRules');
 
 // Пользователь
+// Регистрация / Авторизация / Выход
 Route::get('/auth', function () {
     return view('user.auth');
 })->name('auth');
@@ -26,17 +31,30 @@ Route::get('/reg', function () {
     return view('user.reg');
 })->name('reg');
 Route::post('/signUp', [UserController::class, 'create'])->middleware('guest')->name('signUp');
-Route::post('/signIn', [UserController::class, 'login'])->middleware('guest')->name('signIn');
+Route::post('/login', [UserController::class, 'login'])->middleware('guest')->name('signIn');
 Route::get('/signOut', [UserController::class, 'logout'])->middleware('guest')->name('signOut');
+// Профиль пользователя и редактирование данных пользователя
 Route::get('/user/{login}', [UserController::class, 'index'])->name('userpage');
 Route::post('/user/delete', [UserController::class, 'destroy'])->middleware('auth')->name('userdelete');
 Route::get('/user/{login}/edit', [UserController::class, 'editor'])->middleware('auth')->name('userEditor');
 Route::post('/user/save', [UserController::class, 'update'])->middleware('auth')->name('userSaveChanges');
+// Становление разработчиком
+Route::get('/user/{login}/beDeveloper', [UserController::class, 'beDeveloper'])->middleware('auth')->name('beDeveloper');
 
 // Команда разработчиков
-Route::get('/devteam', [DevTeamController::class, 'list'])->name('devTeams');
 
 // Проекты
+Route::get('/new-project', function () {
+    return view('project.editor');
+})->middleware('auth')->name('projectNew');
+Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
+Route::post('/project/save', [ProjectController::class, 'save'])->name('projectSaveChanges');
+Route::get('/project/{url}/edit', [ProjectController::class, 'editor'])->name('projectEditor');
+Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->name('projectDelete');
+// Снапшоты
+Route::get('/project/{project}', [ProjectController::class, 'index'])->name('snapshotNew');
+Route::get('/project/{project}/{id}/edit', [ProjectController::class, 'editor'])->name('snapshotEditor');
+Route::get('/project/{project}/{id}/delete', [ProjectController::class, 'destroy'])->name('snapshotDelete');
 
 // Посты
 

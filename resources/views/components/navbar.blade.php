@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">@yield('title')</a>
         <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu"
@@ -7,7 +7,7 @@
 </nav>
 
 <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasMenu"
-    aria-labelledby="offcanvasMenuLabel">
+    aria-labelledby="offcanvasMenuLabel" data-bs-theme="dark">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasMenuLabel">Меню</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -23,6 +23,8 @@
         <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}"
             class="m-1 btn btn-outline-primary">Личный кабинет</a>
         @auth
+            <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}" class="m-1 btn btn-outline-primary">Личный
+                кабинет</a>
             @if (auth()->user()->role_id == 1)
                 <button class="m-1 btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#beDeveloper">Стать
                     разработчиком</button>
@@ -38,12 +40,19 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Для того, чтобы стать разработчиком, вам необходимо полностью заполнить свой профиль.
-                                Добавить аватар, описание, не быть забаненным и подтвердить почту.
+                                Для того, чтобы стать разработчиком, вам необходимо заполнить свой профиль.
+                                <br>
+                                <br>
+                                Добавить добавьте описание профиля, если вы этого ещё не сделали, также стоит добавить
+                                аватар.
+                                <br>
+                                <br>
+                                Нажимая на кнопку "Стать разработчиком" вы автоматически соглашаетесь со всеми
+                                <a href="{{ route('publicationRules') }}">правилами публикации программных продуктов</a>.
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                <button type="button" class="btn btn-primary">Далее</button>
+                                <a href="{{ route('beDeveloper', ['login' => auth()->user()->login]) }}" class="btn btn-primary">Далее</a>
                             </div>
                         </div>
                     </div>
