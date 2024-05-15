@@ -59,8 +59,7 @@ class UserController extends Controller
             'password' => $userRaw->password,
             'avatar' => $userRaw->avatar,
             'role_id' => 1,
-            'banned' => 0,
-            'created_at' => now()
+            'banned' => 0
         ]);
 
         Auth::login($user);

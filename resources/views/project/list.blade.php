@@ -21,7 +21,12 @@
                                 <a
                                     href="{{ route('userpage', ['login' => $project->dev_team]) }}">{{ $project->dev_team }}</a>
                             @else
-                                <a href="{{ route('userpage', ['login' => $project->author]) }}">{{ $project->author }}</a>
+                                @if ($project->author)
+                                    <a
+                                        href="{{ route('userpage', ['login' => $project->author]) }}">{{ $project->author }}</a>
+                                @else
+                                    <i class="text-secondary">Автор удалил свою страницу</i>
+                                @endif
                             @endif
                         </i>
                     </p>

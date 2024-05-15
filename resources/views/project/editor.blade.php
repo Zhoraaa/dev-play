@@ -33,7 +33,7 @@
         </div>
         <div class="form-floating mb-3">
             <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $projectdata->description ?? null !!}</textarea>
-            <label for="description">О вас</label>
+            <label for="description">Описание вашего проекта</label>
             <div class="editor-buttons mt-3">
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
                 <button type="button" id="italicBtn" class="btn btn-outline-secondary"><i>Курсив</i></button>
@@ -55,7 +55,7 @@
             </div>
         </div>
         <select class="form-select mb-3" aria-label="" name="team">
-            <option value="false" selected>Дать доступ команде</option>
+            <option value="0" selected disabled>Дать доступ команде</option>
             {{-- @foreach ($collection as $item)
                 <option value="false" selected>Дать доступ команде</option>
             @endforeach --}}

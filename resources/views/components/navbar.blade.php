@@ -20,10 +20,8 @@
         <a href="{{ route('devTeams') }}" class="m-1 btn btn-outline-primary">Команды разработчиков</a>
         <hr>
         {{-- Ссылки пользователей --}}
-        <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}"
-            class="m-1 btn btn-outline-primary">Личный кабинет</a>
         @auth
-            <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}" class="m-1 btn btn-outline-primary">Личный
+            <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}"class="m-1 btn btn-outline-primary">Личный
                 кабинет</a>
             @if (auth()->user()->role_id == 1)
                 <button class="m-1 btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#beDeveloper">Стать
@@ -52,7 +50,8 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                <a href="{{ route('beDeveloper', ['login' => auth()->user()->login]) }}" class="btn btn-primary">Далее</a>
+                                <a href="{{ route('beDeveloper', ['login' => auth()->user()->login]) }}"
+                                    class="btn btn-primary">Далее</a>
                             </div>
                         </div>
                     </div>

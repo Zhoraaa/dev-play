@@ -35,16 +35,20 @@
 @if ($user_exist)
     @section('body')
         <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
-            <div class="d-flex justify-content-between mb-2">
+            <div class="d-flex flex-wrap justify-content-between mb-2">
                 <h2 class="text-{{ $namestyle }}">
                     {{ $userdata->login }}
                 </h2>
                 @if ($canedit)
                     <div>
-                        <a href="{{route('projectNew')}}" class="btn btn-success">+ Новый проект</a>
+                        @auth
+                            @if (auth()->user()->role_id == 2 && !auth()->user()->banned)
+                                <a href="{{ route('projectNew') }}" class="btn btn-success mb-1">+ Новый проект</a>
+                            @endif
+                        @endauth
                         <a href="{{ route('userEditor', ['login' => auth()->user()->login]) }}"
-                            class="btn btn-warning">Редактировать информацию</a>
-                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
+                            class="btn btn-warning mb-1">Редактировать информацию</a>
+                        <button class="btn btn-danger mb-1" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
                             аккаунт</button>
                     </div>
                     <!-- Модалька подтверждения -->
@@ -77,10 +81,10 @@
                     </div>
                 @endif
             </div>
-            <div class="d-flex justify-content-between mb-2">
-                <p class="text-secondary">
+            <div class="d-flex flex-wrap justify-content-between mb-3">
+                <span class="text-secondary">
                     {{ $userdata->role }} зарегестрирован...
-                </p>
+                </span>
                 <span>
                     {!! $userdata->created_at !!}
                 </span>

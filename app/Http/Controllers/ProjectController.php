@@ -104,7 +104,7 @@ class ProjectController extends Controller
             'cover' => $data->cover,
             'url' => $data->url,
             'author_id' => Auth::user()->id,
-            'team_rights_id' => $data->team == true ? $data->team : null,
+            'team_rights_id' => $data->team,
             'updated_at' => now()
         ]);
     }
@@ -117,27 +117,27 @@ class ProjectController extends Controller
 
         $oldData = Project::where('id', $newData->id)->first();
 
-        // if (Hash::check($newData->password, $oldData->password)) {
-        $newDataText['description'] = strip_tags($newDataText['description']);
-        $newDataText['description'] = $this->handle($newDataText['description'], '**');
-        $newDataText['description'] = $this->handle($newDataText['description'], '_');
-        $newDataText['description'] = str_replace("\r\n", "<br>", $newDataText['description']);
-        $newDataText['description'] = $this->handleLinks($newDataText['description']);
+        if (Auth::user()->id == $oldData->author_id) {
+            $newDataText['description'] = strip_tags($newDataText['description']);
+            $newDataText['description'] = $this->handle($newDataText['description'], '**');
+            $newDataText['description'] = $this->handle($newDataText['description'], '_');
+            $newDataText['description'] = str_replace("\r\n", "<br>", $newDataText['description']);
+            $newDataText['description'] = $this->handleLinks($newDataText['description']);
 
-        $differences = array();
+            $differences = array();
 
-        foreach ($newDataText as $key => $value) {
-            if ($newDataText[$key] != $oldData[$key] && $newDataText) {
-                $differences += [$key => $value];
+            foreach ($newDataText as $key => $value) {
+                if ($newDataText[$key] != $oldData[$key] && $newDataText) {
+                    $differences += [$key => $value];
+                }
             }
-        }
 
-        $oldData->update($differences);
-        // dd($oldData);
-        return redirect()->back()->with('success', 'Данные сохранены');
-        // } else {
-        //     return redirect()->back()->with('error', 'Неверный пароль');
-        // }
+            $oldData->update($differences);
+
+            return redirect()->back()->with('success', 'Данные сохранены');
+        } else {
+            return redirect()->back()->with('error', 'Отказано в доступе');
+        }
     }
 
     public function destroy(Request $request, $url)
@@ -147,6 +147,8 @@ class ProjectController extends Controller
             ->where('url', $url)->first();
 
         if (Hash::check($request->password, $project->password)) {
+            Project::where('url', $url)->delete();
+
             return redirect()->route('userpage', ['login' => Auth::user()->login])->with('success', 'Спасибо, что размещали свой проект у нас!');
         } else {
             return redirect()->route('project', ['url' => $project->url])->with('error', 'Неверный пароль');

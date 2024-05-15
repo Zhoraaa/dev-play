@@ -48,18 +48,18 @@ Route::get('/new-project', function () {
     return view('project.editor');
 })->middleware('auth')->name('projectNew');
 Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
-Route::post('/project/save', [ProjectController::class, 'save'])->name('projectSaveChanges');
-Route::get('/project/{url}/edit', [ProjectController::class, 'editor'])->name('projectEditor');
-Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->name('projectDelete');
+Route::post('/project/save', [ProjectController::class, 'save'])->middleware('auth')->name('projectSaveChanges');
+Route::get('/project/{url}/edit', [ProjectController::class, 'editor'])->middleware('auth')->name('projectEditor');
+Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->middleware('auth')->name('projectDelete');
 // Снапшоты
-Route::get('/project/{project}', [ProjectController::class, 'index'])->name('snapshotNew');
-Route::get('/project/{project}/{id}/edit', [ProjectController::class, 'editor'])->name('snapshotEditor');
-Route::get('/project/{project}/{id}/delete', [ProjectController::class, 'destroy'])->name('snapshotDelete');
+Route::get('/project/{project}', [ProjectController::class, 'index'])->middleware('auth')->name('snapshotNew');
+Route::get('/project/{project}/{id}/edit', [ProjectController::class, 'editor'])->middleware('auth')->name('snapshotEditor');
+Route::get('/project/{project}/{id}/delete', [ProjectController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');
 
 // Посты
 
 // Тикеты
 
 // Админка
-Route::get('/admin/users', [AdminController::class, 'user-list'])->middleware('auth')->name('userList');
-Route::get('/admin/tags', [AdminController::class, 'tag-list'])->middleware('auth')->name('tagList');
+Route::get('/admin/users', [AdminController::class, 'userList'])->middleware('auth')->name('userList');
+Route::get('/admin/tags', [AdminController::class, 'tagList'])->middleware('auth')->name('tagList');
