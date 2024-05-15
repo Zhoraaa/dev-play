@@ -33,11 +33,20 @@ class ProjectController extends Controller
             // Формируем окончательные строки для отображения
             $projectdata->created_at_formatted = "$createdAtDiff (<i class='text-secondary'>$createdAtFormatted</i>)";
             $projectdata->updated_at_formatted = "$updatedAtDiff (<i class='text-secondary'>$updatedAtFormatted</i>)";
+
+            // Описываем теги названиями
+            $tags = TagToProjectConnection::where('project_id', '=', $projectdata->id)
+                ->join('tags', 'tags.id', 'tag_to_project_connections.tag_id')
+                ->select('tags.*')
+                ->get();
         }
+
+
 
         return view('project.page', [
             'project_exist' => Project::where('url', $url)->exists(),
             'projectdata' => $projectdata,
+            'tags' => $tags,
         ]);
     }
 
@@ -89,7 +98,20 @@ class ProjectController extends Controller
 
             $tags = Tag::orderBy('name', 'asc')->get();
 
-            return view('project.editor', ['projectdata' => $projectdata, 'tags' => $tags])->with('warning', 'Вы заходите на опасную территорию.');
+            $selectedTagIds = TagToProjectConnection::where('project_id', $projectdata->id)
+                ->pluck('tag_id')
+                ->toArray();
+
+            $selectedTags = [];
+            foreach ($tags as $tag) {
+                $selectedTags[$tag->id] = in_array($tag->id, $selectedTagIds) ? 'checked' : null;
+            }
+
+            return view('project.editor', [
+                'projectdata' => $projectdata,
+                'tags' => $tags,
+                'selectedTags' => $selectedTags,
+            ])->with('warning', 'Вы заходите на опасную территорию.');
         }
         return redirect()->route('home')->with('error', 'Проект не найден.');
     }
@@ -102,7 +124,7 @@ class ProjectController extends Controller
         $data->description = str_replace("\r\n", "<br>", $data->description);
         $data->description = $this->handleLinks($data->description);
 
-        Project::create([
+        $proj = Project::create([
             'name' => $data->name,
             'description' => $data->description,
             'cover' => $data->cover,
@@ -111,6 +133,22 @@ class ProjectController extends Controller
             'team_rights_id' => $data->team,
             'updated_at' => now()
         ]);
+
+        $tagsRaw = array_filter($data->all(), function ($key) {
+            return strpos($key, "tag-") === 0;
+        }, ARRAY_FILTER_USE_KEY);
+        $tags = array();
+        foreach ($tagsRaw as $key => $val) {
+            $tagID = str_replace('tag-', '', $key);
+            $tags += [$tagID => $tagID];
+        }
+
+        foreach ($tags as $tag_id) {
+            TagToProjectConnection::create([
+                'project_id' => $proj->id,
+                'tag_id' => $tag_id
+            ]);
+        }
     }
     public function update(Request $newData)
     {
@@ -156,13 +194,35 @@ class ProjectController extends Controller
             $oldData->update($differences);
 
             // Достаём записи о тегах, причисленных к проекту
+            // И записываем их в отдельный массив данных
             $oldTags = TagToProjectConnection::where('project_id', '=', $newData->id)
                 ->select('tag_to_project_connections.tag_id')
                 ->get();
             $oldTags = $oldTags->all();
-            dd($oldTags[0]->all());
+            $oldTagsArray = array();
+            foreach ($oldTags as $oldTag) {
+                $oldTagsArray += [$oldTag->tag_id => $oldTag->tag_id];
+            }
+            // Записываем ключи (равные id тегов) для сравнения наличия тегов в массивах
+            $keysTags = array_keys($tags);
+            $keysOTA = array_keys($oldTagsArray);
+            // Если массив пришёл в этот раз из формы, но его не было в базе, он помечается для добавления, если наоборот - для удаления.
+            $toAdd = array_diff($keysTags, $keysOTA); // Массив на добавление
+            $toDel = array_diff($keysOTA, $keysTags); // Массив на удаление
 
-            dd('debug');
+            // Добавляем и удаляем записи в базе в соответствии с массивами.
+            foreach ($toAdd as $tag) {
+                TagToProjectConnection::create([
+                    'project_id' => $newData->id,
+                    'tag_id' => $tag
+                ]);
+            }
+            foreach ($toDel as $tag) {
+                TagToProjectConnection::where([
+                    'project_id' => $newData->id,
+                    'tag_id' => $tag
+                ])->delete();
+            }
             return redirect()->back()->with('success', 'Данные сохранены');
         } else {
             return redirect()->back()->with('error', 'Отказано в доступе');
@@ -176,6 +236,7 @@ class ProjectController extends Controller
             ->where('url', $url)->first();
 
         if (Hash::check($request->password, $project->password)) {
+            TagToProjectConnection::where('project_id', '=', $project->id)->delete();
             Project::where('url', $url)->delete();
 
             return redirect()->route('userpage', ['login' => Auth::user()->login])->with('success', 'Спасибо, что размещали свой проект у нас!');

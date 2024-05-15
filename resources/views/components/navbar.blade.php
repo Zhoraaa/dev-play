@@ -1,8 +1,16 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">@yield('title')</a>
-        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu"
-            aria-controls="offcanvasMenu">Меню</button>
+        @auth
+            <div>
+                <a href="{{ route('changeRole', ['role' => 1]) }}" class="btn btn-{{ auth()->user()->role_id !== 1 ? 'outline-' : null }}light">Пользователь</a>
+                <a href="{{ route('changeRole', ['role' => 2]) }}" class="btn btn-{{ auth()->user()->role_id !== 2 ? 'outline-' : null }}success">Разработчик</a>
+                <a href="{{ route('changeRole', ['role' => 3]) }}" class="btn btn-{{ auth()->user()->role_id !== 3 ? 'outline-' : null }}warning">Модератор</a>
+                <a href="{{ route('changeRole', ['role' => 4]) }}" class="btn btn-{{ auth()->user()->role_id !== 4 ? 'outline-' : null }}danger">Администратор</a>
+            </div>
+        @endauth
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">Меню</button>
     </div>
 </nav>
 

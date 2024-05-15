@@ -28,9 +28,6 @@
                         <th scope="row">{{ $tag->id }}</th>
                         <td>{{ $tag->name }}</td>
                         <td>
-                            <a href="" class="btn btn-warning">
-                                Редактировать
-                            </a>
                             <a href="{{ route('tagDel', ['id' => $tag->id]) }}" class="btn btn-danger">
                                 Удалить
                             </a>
