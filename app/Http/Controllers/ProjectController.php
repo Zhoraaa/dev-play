@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Tag;
+use App\Models\TagToProjectConnection;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -85,7 +87,9 @@ class ProjectController extends Controller
             $projectdata->description = str_replace("</i>", "_", $projectdata->description);
             $projectdata->description = str_replace("<br>", "\r\n", $projectdata->description);
 
-            return view('project.editor', compact('projectdata'))->with('warning', 'Вы заходите на опасную территорию.');
+            $tags = Tag::orderBy('name', 'asc')->get();
+
+            return view('project.editor', ['projectdata' => $projectdata, 'tags' => $tags])->with('warning', 'Вы заходите на опасную территорию.');
         }
         return redirect()->route('home')->with('error', 'Проект не найден.');
     }
@@ -110,30 +114,55 @@ class ProjectController extends Controller
     }
     public function update(Request $newData)
     {
+        // Записываем важные данные в отдельный массив. 
         $newDataText = $newData->all();
         unset($newDataText['_token']);
-        // unset($newDataText['password']);
-        // dd($newDataText);
+        $newDataText = array_filter($newDataText, function ($key) {
+            return strpos($key, "tag-") !== 0;
+        }, ARRAY_FILTER_USE_KEY);
+        // Отделяем проставленные теги от остальных данных.
+        $tagsRaw = array_filter($newData->all(), function ($key) {
+            return strpos($key, "tag-") === 0;
+        }, ARRAY_FILTER_USE_KEY);
+        $tags = array();
+        foreach ($tagsRaw as $key => $val) {
+            $tagID = str_replace('tag-', '', $key);
+            $tags += [$tagID => $tagID];
+        }
+        // Теперь у нас есть массив текстовых данных и массив отмеченных тегов
 
+        // Достаём старые данные
         $oldData = Project::where('id', $newData->id)->first();
 
+        // В случае успешной проверки безопасности работаем дальше
         if (Auth::user()->id == $oldData->author_id) {
+            // Преобразовываем текст описания по ключевым символам
             $newDataText['description'] = strip_tags($newDataText['description']);
             $newDataText['description'] = $this->handle($newDataText['description'], '**');
             $newDataText['description'] = $this->handle($newDataText['description'], '_');
             $newDataText['description'] = str_replace("\r\n", "<br>", $newDataText['description']);
             $newDataText['description'] = $this->handleLinks($newDataText['description']);
-
+            // Заготавливаем массив
             $differences = array();
 
             foreach ($newDataText as $key => $value) {
                 if ($newDataText[$key] != $oldData[$key] && $newDataText) {
+                    // Записываем в этот массив пришедшие данные, отличающиеся от таковых в базе
                     $differences += [$key => $value];
                 }
             }
 
+            // Обновляем запись в базе.
             $oldData->update($differences);
 
+            // Достаём записи о тегах, причисленных к проекту
+            $oldTags = TagToProjectConnection::where('project_id', '=', $newData->id)
+                ->select('tag_to_project_connections.tag_id')
+                ->get();
+            $oldTags = $oldTags->all();
+            dd($oldTags[0]->all());
+
+            dd('debug');
             return redirect()->back()->with('success', 'Данные сохранены');
         } else {
             return redirect()->back()->with('error', 'Отказано в доступе');

@@ -5,11 +5,13 @@
 @endsection
 
 @section('body')
-    <form action="" method="post" class="input-group m-2 rounded border overflow-hidden">
+    <form action="{{ route('tagNew') }}" method="post" class="m-2 rounded border overflow-hidden">
         @csrf
-        <span class="input-group-text">Новый тег:</span>
-        <input type="text" class="form-control" placeholder="Название...">
-        <button class="btn btn-success">Добавить тег</button>
+        <div class="input-group">
+            <span class="input-group-text">Новый тег:</span>
+            <input type="text" name="name" class="form-control" placeholder="Название...">
+            <button class="btn btn-success">Добавить тег</button>
+        </div>
     </form>
     <div class="m-2 rounded border border-secondary shadow overflow-hidden">
         <table class="table">
@@ -29,7 +31,7 @@
                             <a href="" class="btn btn-warning">
                                 Редактировать
                             </a>
-                            <a href="" class="btn btn-danger">
+                            <a href="{{ route('tagDel', ['id' => $tag->id]) }}" class="btn btn-danger">
                                 Удалить
                             </a>
                         </td>

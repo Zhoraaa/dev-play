@@ -4,7 +4,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DevTeamController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/test', function () {
@@ -32,7 +34,7 @@ Route::get('/reg', function () {
 })->name('reg');
 Route::post('/signUp', [UserController::class, 'create'])->middleware('guest')->name('signUp');
 Route::post('/login', [UserController::class, 'login'])->middleware('guest')->name('signIn');
-Route::get('/signOut', [UserController::class, 'logout'])->middleware('guest')->name('signOut');
+Route::get('/signOut', [UserController::class, 'logout'])->middleware('auth')->name('signOut');
 // Профиль пользователя и редактирование данных пользователя
 Route::get('/user/{login}', [UserController::class, 'index'])->name('userpage');
 Route::post('/user/delete', [UserController::class, 'destroy'])->middleware('auth')->name('userdelete');
@@ -45,7 +47,8 @@ Route::get('/user/{login}/beDeveloper', [UserController::class, 'beDeveloper'])-
 
 // Проекты
 Route::get('/new-project', function () {
-    return view('project.editor');
+    $tags = Tag::orderBy('name', 'asc')->get();
+    return view('project.editor', ['tags' => $tags]);
 })->middleware('auth')->name('projectNew');
 Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
 Route::post('/project/save', [ProjectController::class, 'save'])->middleware('auth')->name('projectSaveChanges');
@@ -59,6 +62,10 @@ Route::get('/project/{project}/{id}/delete', [ProjectController::class, 'destroy
 // Посты
 
 // Тикеты
+
+// Теги
+Route::post('/tag/new', [TagController::class, 'create'])->middleware('auth')->name('tagNew');
+Route::get('/tag/{id}/delete', [TagController::class, 'destroy'])->middleware('auth')->name('tagDel');
 
 // Админка
 Route::get('/admin/users', [AdminController::class, 'userList'])->middleware('auth')->name('userList');
