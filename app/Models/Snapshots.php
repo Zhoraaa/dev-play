@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Snapshots extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'name',
+        'description',
+        'project_id'
+    ];
 }

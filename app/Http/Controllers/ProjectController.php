@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Tag;
+use App\Models\Snapshots;
 use App\Models\TagToProjectConnection;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -39,14 +40,19 @@ class ProjectController extends Controller
                 ->join('tags', 'tags.id', 'tag_to_project_connections.tag_id')
                 ->select('tags.*')
                 ->get();
+
+            $snapshots = Snapshots::where('project_id', '=', $projectdata->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            return redirect()->back()->with('error', 'Проект не найден');
         }
 
-
-
         return view('project.page', [
-            'project_exist' => Project::where('url', $url)->exists(),
+            'url' => $url,
             'projectdata' => $projectdata,
             'tags' => $tags,
+            'snapshots' => $snapshots,
         ]);
     }
 
@@ -150,7 +156,7 @@ class ProjectController extends Controller
             ]);
         }
     }
-    public function update(Request $newData)
+    private function update(Request $newData)
     {
         // Записываем важные данные в отдельный массив. 
         $newDataText = $newData->all();

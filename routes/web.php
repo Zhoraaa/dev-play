@@ -63,10 +63,10 @@ Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->mid
 Route::get('/project/{url}/new-snapshot', function ($url) {
     return view('snapshot.editor', ['url' => $url]);
 })->middleware('auth')->name('snapshotNew');
-Route::get('/project/{url}/snapshot/{name}/', [SnapshotsController::class, 'index'])->middleware('auth')->name('snapshot');
+Route::get('/project/{url}/snapshot/{build}/', [SnapshotsController::class, 'index'])->middleware('auth')->name('snapshot');
 Route::post('/project/{url}/snapshot/save', [SnapshotsController::class, 'save'])->middleware('auth')->name('snapshotSaveChanges');
-Route::get('/project/{url}/snapshot/{name}/edit', [SnapshotsController::class, 'editor'])->middleware('auth')->name('snapshotEditor');
-Route::get('/project/{url}/snapshot/{name}/delete', [SnapshotsController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');
+Route::get('/project/{url}/snapshot/{build}/edit', [SnapshotsController::class, 'editor'])->middleware('auth')->name('snapshotEditor');
+Route::post('/project/{url}/snapshot/{build}/delete', [SnapshotsController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');
 
 // Посты
 

@@ -28,7 +28,7 @@
                     <input type="text" name="url" class="form-control" id="url"
                         value="{{ $projectdata->url ?? null }}">
                     <label for="url">URL</label>
-                    <small class="text-secondary"><i>Ссылка на проект, например @exampleProj</i></small>
+                    <small class="text-secondary"><i>Ссылка на проект, например exampleProj</i></small>
                 </div>
             </div>
             <div class="col mt-3">
