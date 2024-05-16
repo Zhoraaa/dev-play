@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('author_id')->nullable();
+            $table->unsignedBigInteger('author_id');
             $table->foreign('author_id')
                 ->references('id')->on('users')
                 ->onUpdate('cascade')
@@ -34,7 +34,7 @@ return new class extends Migration
                 ->onDelete('set null');
 
             $table->boolean('show_true_author');
-            $table->text('post_text');
+            $table->text('text');
             $table->foreignId('type_id')->constrained('post_types');
 
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));

@@ -77,5 +77,6 @@ Route::post('/tag/new', [TagController::class, 'create'])->middleware('auth')->n
 Route::get('/tag/{id}/delete', [TagController::class, 'destroy'])->middleware('auth')->name('tagDel');
 
 // Админка
-Route::get('/admin/users', [AdminController::class, 'userList'])->middleware('auth')->name('userList');
 Route::get('/admin/tags', [AdminController::class, 'tagList'])->middleware('auth')->name('tagList');
+Route::get('/admin/users', [AdminController::class, 'userList'])->middleware('auth')->name('userList');
+Route::get('/admin/user/{id}', [AdminController::class, 'userEdit'])->middleware('auth')->name('userEdit');

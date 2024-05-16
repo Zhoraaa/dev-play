@@ -34,10 +34,16 @@
 
 @if ($user_exist)
     @section('body')
-        <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
+        <div
+            class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $userdata->banned ? 'alert alert-danger' : null }}">
             <div class="d-flex flex-wrap justify-content-between mb-2">
                 <h2 class="text-{{ $namestyle }}">
                     {{ $userdata->login }}
+                    @if ($userdata->banned)
+                        <i class="text-secondary">
+                            (Пользователь забанен)
+                        </i>
+                    @endif
                 </h2>
                 @if ($canedit)
                     <div>
