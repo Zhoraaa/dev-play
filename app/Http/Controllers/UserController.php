@@ -174,6 +174,19 @@ class UserController extends Controller
         return redirect()->route('home')->with('error', 'Пользователь не найден.');
     }
 
+    public function beDeveloper()
+    {
+        // dd(Auth::user());
+        Auth::user()->update(['role_id' => 2]);
+
+        return redirect()->back()->with('success', 'Теперь вы разработчик!');
+        // return redirect()->back()->with('error', 'Ошибка, не заполнены необходимые данные');
+    }
+
+    public function updateAvatar() {
+        
+    }
+
     // Обработчики текста
     private function handle($rawText, $style_code)
     {
@@ -227,15 +240,5 @@ class UserController extends Controller
 
         // Возвращаем обработанный текст
         return $processedText;
-    }
-
-
-    public function beDeveloper()
-    {
-        // dd(Auth::user());
-        Auth::user()->update(['role_id' => 2]);
-
-        return redirect()->back()->with('success', 'Теперь вы разработчик!');
-        // return redirect()->back()->with('error', 'Ошибка, не заполнены необходимые данные');
     }
 }

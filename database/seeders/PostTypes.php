@@ -16,6 +16,6 @@ class PostTypes extends Seeder
     {
         //
         PostTypesModel::factory()->create(['name'=>'Пост']);
-        PostTypesModel::factory()->create(['name'=>'Тикет']);
+        PostTypesModel::factory()->create(['name'=>'Отчёт об ошибке']);
     }
 }

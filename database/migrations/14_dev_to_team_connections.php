@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,9 +12,13 @@ return new class extends Migration
     {
         Schema::create('dev_to_team_connections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('developer_id')->constrained('users');
-            $table->foreignId('team_id')->constrained('dev_teams');
-            $table->string('role_name');
+            $table->foreignId('developer_id')->constrained('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('team_id')->constrained('dev_teams')->onUpdate('cascade')->onDelete('cascade');
+            $table->enum('role', [
+                '1' => 'Глава',
+                '2' => 'Разработчик',
+                '3' => 'Копирайтер',
+            ]);
         });
     }
 

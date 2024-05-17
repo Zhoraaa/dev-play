@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('snapshots', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
+            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade')->onUpdate('cascade');
 
             $table->string('name');
             $table->text('description');

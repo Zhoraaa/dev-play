@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -14,9 +13,15 @@ return new class extends Migration
     {
         Schema::create('post_media', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('post_id')->constrained('posts');
+            $table->foreignId('post_id')->constrained('posts')->onDelete('cascade')->onUpdate('cascade');
+
+            $table->unsignedBigInteger('author_id');
+            $table->foreign('author_id')
+                ->references('id')->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+
             $table->string('file_name');
-            $table->string('file_description');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
     }
