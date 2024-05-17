@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DevTeamController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SnapshotsController;
 use App\Http\Controllers\TagController;
@@ -69,6 +70,8 @@ Route::get('/project/{url}/snapshot/{build}/edit', [SnapshotsController::class, 
 Route::post('/project/{url}/snapshot/{build}/delete', [SnapshotsController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');
 
 // Посты
+Route::post('/post-save', [PostController::class, 'save'])->middleware('auth')->name('postSave');
+Route::get('/post/{id}/delete', [PostController::class, 'destroy'])->middleware('auth')->name('postDel');
 
 // Тикеты
 

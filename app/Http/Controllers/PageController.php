@@ -25,7 +25,7 @@ class PageController extends Controller
 
     public function news()
     {
-        $news = Post::orderBy('created_at', 'asc')
+        $news = Post::orderBy('created_at', 'desc')
             ->where('type_id', '=', 1)
             ->leftJoin('users', 'users.id', 'posts.author_id')
             ->leftJoin('dev_teams', 'dev_teams.id', 'posts.author_mask')
