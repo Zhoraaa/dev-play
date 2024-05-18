@@ -68,8 +68,8 @@ class SnapshotsController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:snapshots|max:255|regex:/^[a-zA-Z0-9\s\-_]+$/u', // Обязательное поле, максимум 255 символов
             'description' => 'required', // Обязательное поле для описания
-            'images.*' => 'nullable|file|mimes:jpeg,png,gif,mp4,avi', // Максимальный размер 2MB
-            'downloadable.*' => 'nullable|file|mimes:pdf,doc,docx,zip', // Максимальный размер 2MB
+            'images.*' => 'nullable|file|mimes:jpeg,png,gif,mp4,avi',
+            'downloadable.*' => 'nullable|file|mimes:pdf,doc,docx,zip',
         ], [
             'name.required' => 'Поле "Название" обязательно для заполнения.',
             'name.max' => 'Поле "Название" должно содержать не более 255 символов.',

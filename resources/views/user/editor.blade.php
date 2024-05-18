@@ -7,7 +7,8 @@
 
 @section('body')
     <div class="m-auto w-75 mt-3">
-        <a href="{{ route('userpage', ['login'=>auth()->user()->login]) }}" class="d-block mt-3 btn btn-secondary">← Назад в личный кабинет</a>
+        <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}" class="d-block mt-3 btn btn-secondary">← Назад в
+            личный кабинет</a>
     </div>
     <form action="{{ route('userSaveChanges') }}" method="POST" enctype="multipart/form-data" class="m-auto mt-3 w-75">
         @csrf
@@ -33,20 +34,6 @@
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
                 <button type="button" id="italicBtn" class="btn btn-outline-secondary"><i>Курсив</i></button>
                 <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить ссылку</button>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col">
-                <label for="formFile" class="form-label">Аватар</label>
-                <input class="form-control" type="file" id="formFile">
-            </div>
-            <div class="col">
-                <label for="avatar">Текущий аватар:</label>
-                @if ($userdata->avatar)
-                    <img id="avatar" src="{{ $userdata->avatar }}" alt="Текущий аватар {{ $userdata->login }}">
-                @else
-                    <p>Отсутствует.</p>
-                @endif
             </div>
         </div>
         <div class="form-floating mb-3">

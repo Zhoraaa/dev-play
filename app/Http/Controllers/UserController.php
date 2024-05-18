@@ -7,6 +7,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Storage;
+use Image;
+use Validator;
 
 class UserController extends Controller
 {
@@ -183,9 +186,55 @@ class UserController extends Controller
         // return redirect()->back()->with('error', 'Ошибка, не заполнены необходимые данные');
     }
 
-    public function updateAvatar() {
-        
+    // Метод для обновления аватарки
+    public function avatarUpdate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'avatar' => 'nullable|file|mimes:jpeg,jpg,png,gif',
+        ]);
+
+        $image = $request->file('avatar');
+
+        if ($request->hasFile('avatar')) {
+            // Удаление предыдущей аватарки
+            if (Storage::exists('public/imgs/users/avatars/' . Auth::user()->avatar)) {
+                Storage::delete('public/imgs/users/avatars/' . Auth::user()->avatar);
+            }
+
+            // Генерация имени файла
+            $fileName = time() . '_' . Auth::user()->login . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('public/imgs/users/avatars/', $fileName);
+
+            // Обновление записи в базе
+            User::where('id', Auth::user()->id)
+                ->update([
+                    'avatar' => $fileName
+                ]);
+
+            return redirect()->back()->with('success', 'Аватар обновлён.');
+        }
+
+        return redirect()->back()->with('error', 'Не удалось загрузить аватар.');
     }
+
+    public function avatarDelete()
+    {
+        // Удаление аватарки
+        if (Storage::exists('public/imgs/users/avatars/' . Auth::user()->avatar)) {
+            Storage::delete('public/imgs/users/avatars/' . Auth::user()->avatar);
+
+            // Очистка поля avatar в базе данных
+            User::where('id', Auth::user()->id)
+                ->update([
+                    'avatar' => null
+                ]);
+
+            return redirect()->back()->with('success', 'Аватар удалён.');
+        } else {
+            return redirect()->back()->with('error', 'У вас нет аватарки!');
+        }
+    }
+
 
     // Обработчики текста
     private function handle($rawText, $style_code)

@@ -46,6 +46,9 @@ Route::get('/user/{login}', [UserController::class, 'index'])->name('userpage');
 Route::post('/user/delete', [UserController::class, 'destroy'])->middleware('auth')->name('userdelete');
 Route::get('/user/{login}/edit', [UserController::class, 'editor'])->middleware('auth')->name('userEditor');
 Route::post('/user/save', [UserController::class, 'update'])->middleware('auth')->name('userSaveChanges');
+// Обновление аватара
+Route::post('/user/new-avatar', [UserController::class, 'avatarUpdate'])->middleware('auth')->name('avatarUpdate');
+Route::get('/user/{login}/del-avatar', [UserController::class, 'avatarDelete'])->middleware('auth')->name('avatarDelete');
 // Становление разработчиком
 Route::get('/user/{login}/beDeveloper', [UserController::class, 'beDeveloper'])->middleware('auth')->name('beDeveloper');
 
@@ -83,3 +86,14 @@ Route::get('/tag/{id}/delete', [TagController::class, 'destroy'])->middleware('a
 Route::get('/admin/tags', [AdminController::class, 'tagList'])->middleware('auth')->name('tagList');
 Route::get('/admin/users', [AdminController::class, 'userList'])->middleware('auth')->name('userList');
 Route::get('/admin/user/{id}', [AdminController::class, 'userEdit'])->middleware('auth')->name('userEdit');
+
+// Просмотр файлов
+Route::get('/storage/imgs/users/avatars/{filename}', function ($filename) {
+    $path = storage_path('app/public/imgs/users/avatars/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+});
