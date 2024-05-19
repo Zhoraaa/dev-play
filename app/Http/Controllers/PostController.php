@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +10,52 @@ use Illuminate\Support\Facades\Auth;
 class PostController extends Controller
 {
     //
+    public function index($id)
+    {
+        $post = Post::where('posts.id', '=', $id)
+            ->leftJoin('users', 'users.id', 'posts.author_id')
+            ->leftJoin('dev_teams', 'dev_teams.id', 'posts.author_mask')
+            ->select(
+                'posts.*',
+                'users.login as author',
+                'users.avatar',
+                'dev_teams.name as showing_author',
+                'dev_teams.url as showing_author_url',
+            )
+            ->first();
 
+        $post->formatted_created_at = $post->created_at->format('d.m.Y H:i');
+        $post->formatted_updated_at = $post->updated_at->format('d.m.Y H:i');
+
+        $canedit = false;
+        if (isset(Auth::user()->id) && $post->author === Auth::user()->login) {
+            $canedit = true;
+        }
+
+        $comms = Comment::orderBy('created_at', 'asc')
+            ->where('post_id', '=', $post->id)
+            ->leftJoin('users', 'users.id', 'comments.author_id')
+            ->select(
+                'comments.*',
+                'users.login as author',
+                'users.avatar',
+            )
+            ->get();
+
+        $commsCount = Comment::where('post_id', '=', $post->id)->count();
+
+        foreach ($comms as $comm) {
+            $comm->formatted_created_at = $comm->created_at->format('d.m.Y H:i');
+            $comm->formatted_updated_at = $comm->updated_at->format('d.m.Y H:i');
+        }
+
+        return view('post.page', [
+            'post' => $post,
+            'comms' => $comms,
+            'canedit' => $canedit,
+            'commsCount' => $commsCount,
+        ]);
+    }
     public function save(Request $request)
     {
         $request->validate([
@@ -122,7 +168,6 @@ class PostController extends Controller
 
         return redirect()->back()->with('success', 'Пост удалён.');
     }
-
 
     // Обработчики текста
     private function handle($rawText, $style_code)

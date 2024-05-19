@@ -9,4 +9,10 @@ class DevToTeamConnection extends Model
 {
     use HasFactory;
     public $timestamps = false;
+
+    protected $fillable = [
+        'developer_id',
+        'team_id',
+        'role'
+    ];
 }

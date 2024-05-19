@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->constrained('posts');
-            $table->text('comment_text');
+            $table->text('text');
 
             $table->unsignedBigInteger('author_id')->nullable();
             $table->foreign('author_id')

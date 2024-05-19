@@ -5,14 +5,14 @@
 @endsection
 
 @section('body')
-    <!-- Button trigger modal -->
+    {{-- Триггер модальки нового поста --}}
     <div class="w-75 m-auto mt-2 mb-2">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postEditorModal">
             Новый пост
         </button>
     </div>
 
-    <!-- Modal -->
+    {{-- Модалька нового поста --}}
     <form action="{{ route('postSave') }}" method="post" class="modal fade" id="postEditorModal" tabindex="-1"
         aria-labelledby="postEditorModalLabel" aria-hidden="true">
         @csrf
@@ -45,32 +45,65 @@
         </div>
     </form>
 
-    @foreach ($news as $post)
-        <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
-            <div class="d-flex flex-wrap justify-content-between">
-                <a href="{{ route('userpage', ['login' => $post->author]) }}">
-                    <h5>
-                        {{ $post->author }}
-                    </h5>
-                </a>
-                @auth
-                    @if ($post->author_id === auth()->user()->id)
-                        <div>
-                            <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
-                                Удалить пост
-                            </a>
+    {{-- Список постов --}}
+    @if (isset($news))
+        @foreach ($news as $post)
+            <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <a href="{{ route('userpage', ['login' => $post->author]) }}"
+                        class="d-flex flex-wrap align-items-center text-decoration-none">
+                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                            <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
                         </div>
-                    @endif
-                @endauth
+                        <div>
+                            @php
+                                switch ($post->role_id) {
+                                    default:
+                                        $nickStyle = 'primary';
+                                        break;
+
+                                    case 2:
+                                        $nickStyle = 'success';
+                                        break;
+
+                                    case 3:
+                                        $nickStyle = 'warning';
+                                        break;
+
+                                    case 4:
+                                        $nickStyle = 'danger';
+                                        break;
+                                }
+                            @endphp
+                            <h5 class="link-{{ $nickStyle }}">
+                                {{ $post->author }}
+                            </h5>
+                        </div>
+                    </a>
+                    <div>
+                        <i class="text-secondary">
+                            ({{ $post->formatted_created_at }})
+                        </i>
+                        @auth
+                            @if ($post->author_id === auth()->user()->id)
+                                <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
+                                    Удалить пост
+                                </a>
+                            @endif
+                        @endauth
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <p>
+                        {!! mb_substr(strip_tags($post->text), 0, 600) !!}
+                    </p>
+                </div>
+                <div class="">
+                    <a href="" class="btn btn-primary">
+                        Перейти к обсуждению →
+                    </a>
+                </div>
             </div>
-            <a href="" class="text-secondary">
-                <i>
-                    ({{ $post->formatted_created_at }})
-                </i>
-            </a>
-            <p>
-                {!! $post->text !!}
-            </p>
-        </div>
-    @endforeach
+        @endforeach
+    @endif
 @endsection

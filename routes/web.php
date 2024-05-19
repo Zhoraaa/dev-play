@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DevTeamController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\SnapshotsController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -52,7 +54,18 @@ Route::get('/user/{login}/del-avatar', [UserController::class, 'avatarDelete'])-
 // Становление разработчиком
 Route::get('/user/{login}/beDeveloper', [UserController::class, 'beDeveloper'])->middleware('auth')->name('beDeveloper');
 
-// Команда разработчиков
+// Команды разработчиков
+Route::get('/new-devteam', function () {
+    $devs = User::where('role_id', '=', 2)
+        ->where('id', '!=', Auth::user()->id)
+        ->orderBy('login', 'asc')->get();
+
+    return view('devteam.editor', ['devs' => $devs]);
+})->middleware('auth')->name('devteamNew');
+Route::get('/team/{url}', [DevTeamController::class, 'index'])->name('devteam');
+Route::post('/team/save', [DevTeamController::class, 'save'])->middleware('auth')->name('devteamSave');
+Route::get('/team/{url}/edit', [DevTeamController::class, 'editor'])->middleware('auth')->name('devteamEditor');
+Route::post('/team/{url}/delete', [DevTeamController::class, 'destroy'])->middleware('auth')->name('devteamDelete');
 
 // Проекты
 Route::get('/new-project', function () {
@@ -60,7 +73,7 @@ Route::get('/new-project', function () {
     return view('project.editor', ['tags' => $tags]);
 })->middleware('auth')->name('projectNew');
 Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
-Route::post('/project/save', [ProjectController::class, 'save'])->middleware('auth')->name('projectSaveChanges');
+Route::post('/project/save', [ProjectController::class, 's.ave'])->middleware('auth')->name('projectSaveChanges');
 Route::get('/project/{url}/edit', [ProjectController::class, 'editor'])->middleware('auth')->name('projectEditor');
 Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->middleware('auth')->name('projectDelete');
 // Снапшоты
@@ -74,9 +87,12 @@ Route::post('/project/{url}/snapshot/{build}/delete', [SnapshotsController::clas
 
 // Посты
 Route::post('/post-save', [PostController::class, 'save'])->middleware('auth')->name('postSave');
+Route::get('/post/{id}', [PostController::class, 'index'])->name('post');
 Route::get('/post/{id}/delete', [PostController::class, 'destroy'])->middleware('auth')->name('postDel');
 
-// Тикеты
+// Комментарии
+Route::post('/post/{post_id}/comm-new', [CommentController::class, 'create'])->middleware('auth')->name('commNew');
+Route::get('/comm/{id}/delete', [CommentController::class, 'destroy'])->middleware('auth')->name('commDel');
 
 // Теги
 Route::post('/tag/new', [TagController::class, 'create'])->middleware('auth')->name('tagNew');

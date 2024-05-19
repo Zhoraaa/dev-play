@@ -2,9 +2,7 @@
 
 @php
     $canedit = isset(auth()->user()->id) && auth()->user()->id === $projectdata->author_id ? true : false;
-    $string = $canedit
-            ? $projectdata->name . ' - Панель разработчика'
-            : $projectdata->name;
+    $string = $canedit ? $projectdata->name . ' - Панель разработчика' : $projectdata->name;
     $taglist = '';
     foreach ($tags as $tag) {
         $taglist .=
@@ -95,12 +93,12 @@
         </div>
     </div>
 
-    <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
-        <h5>
-            Снапшоты (Версии) по новизне
-        </h5>
-        @foreach ($snapshots as $snapshot)
-            <a href="{{ route('snapshot', ['url' => $url, 'build' => $snapshot->name]) }}">{{ $snapshot->name }}</a><br>
-        @endforeach
-    </div>
+        <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
+            <h5>
+                Версии по новизне
+            </h5>
+            @foreach ($snapshots as $snapshot)
+                <a href="{{ route('snapshot', ['url' => $url, 'build' => $snapshot->name]) }}">{{ $snapshot->name }}</a><br>
+            @endforeach
+        </div>
 @endsection

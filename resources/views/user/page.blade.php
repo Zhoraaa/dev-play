@@ -36,8 +36,11 @@
     @section('body')
         <div
             class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $userdata->banned ? 'alert alert-danger' : null }}">
-            <div class="d-flex flex-wrap justify-content-between mb-2">
+            <div class="avatar avatar-big">
                 <img src="{{ asset('storage/imgs/users/avatars/' . $userdata->avatar) }}" alt="">
+            </div>
+            <div class="d-flex flex-wrap justify-content-between mb-2">
+
                 <h2 class="text-{{ $namestyle }}">
                     {{ $userdata->login }}
                     @if ($userdata->banned)
