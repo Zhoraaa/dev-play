@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subscribes;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,25 +19,39 @@ class UserController extends Controller
         $count = User::where('login', $login)->count();
 
         if ($count) {
-            $userdata = User::where('login', $login)
+            $user = User::where('login', $login)
                 ->join('roles', 'users.role_id', 'roles.id')
                 ->select('users.*', 'roles.name as role')
                 ->first();
 
-            $userdata->created_at = Carbon::parse($userdata->created_at);
+            $user->created_at = Carbon::parse($user->created_at);
 
             // Преобразование времени в удобочитаемый формат
-            $userdata->created_at = $userdata->created_at->diffForHumans() . ' <i class="text-secondary">(' . Carbon::parse($userdata->created_at)->format('d/m/Y H:i') . ')</i>';
+            $user->created_at = $user->created_at->diffForHumans() . ' <i class="text-secondary">(' . Carbon::parse($user->created_at)->format('d/m/Y H:i') . ')</i>';
 
-            return view('user.page', ['user_exist' => true, 'userdata' => $userdata]);
+            $subscribed = false;
+            if (Auth::user()){
+                $subscribed = Subscribes::where('sub_type', '=', 'developer')
+                    ->where('sub_for', '=', $user->id)
+                    ->where('subscriber_id', '=', Auth::user()->id)
+                    ->count() ? true : false;
+            }
+
+            return view('user.page', [
+                'user_exist' => true,
+                'user' => $user,
+                'subscribed' => $subscribed,
+            ]);
         }
 
-        return view('user.page', ['user_exist' => false]);
+        return view('user.page', [
+            'user_exist' => false,
+        ]);
     }
     public function create(Request $userRaw)
     {
         //
-        $userRaw->validate([
+        $validator = Validator::make($userRaw->all(), [
             'login' => 'required|min:6|max:32|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|max:32|confirmed',
@@ -53,13 +68,17 @@ class UserController extends Controller
             'email.unique' => 'Эта почта уже используется'
         ]);
 
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         // dd($userRaw->all());
 
         $user = User::create([
             'login' => $userRaw->login,
             'email' => $userRaw->email,
             'password' => $userRaw->password,
-            'avatar' => $userRaw->avatar,
+            'avatar' => null,
             'role_id' => 1,
             'banned' => 0
         ]);
@@ -71,7 +90,7 @@ class UserController extends Controller
     public function login(Request $logindata)
     {
         //
-        $logindata->validate([
+        $validator = Validator::make($logindata->all(), [
             'login' => 'required|min:6|max:32',
             'password' => 'required|min:6|max:32',
         ], [
@@ -82,6 +101,10 @@ class UserController extends Controller
             'password.min' => 'Пароль должен быть длиннее 6 символов.',
             'password.max' => 'Пароль должен быть короче 32 символов.',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         if (Auth::attempt($logindata->only('login', 'password'))) {
             return redirect()->route('userpage', ['login' => $logindata->login])->with('success', 'Добро пожаловать, ' . $logindata->login . '!');
@@ -98,7 +121,7 @@ class UserController extends Controller
     }
     public function update(Request $newData)
     {
-        $newData->validate([
+        $validator = Validator::make($newData->all(), [
             'login' => 'required|min:6|max:32',
             'email' => 'nullable|email',
             'password' => 'required|min:6|max:32',
@@ -111,6 +134,10 @@ class UserController extends Controller
             'email.email' => 'Впишите валидный почтовый ящик! Пример: example@mail.ru',
             'email.unique' => 'Эта почта уже используется'
         ]);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
 
         $newDataText = $newData->all();
         unset($newDataText['_token']);
@@ -163,15 +190,15 @@ class UserController extends Controller
     {
         $count = User::where('login', $login)->count();
         if ($count) {
-            $userdata = User::where('login', $login)->first();
-            $userdata->about = $this->removeLinks($userdata->about);
-            $userdata->about = str_replace("<b>", "**", $userdata->about);
-            $userdata->about = str_replace("</b>", "**", $userdata->about);
-            $userdata->about = str_replace("<i>", "_", $userdata->about);
-            $userdata->about = str_replace("</i>", "_", $userdata->about);
-            $userdata->about = str_replace("<br>", "\r\n", $userdata->about);
+            $user = User::where('login', $login)->first();
+            $user->about = $this->removeLinks($user->about);
+            $user->about = str_replace("<b>", "**", $user->about);
+            $user->about = str_replace("</b>", "**", $user->about);
+            $user->about = str_replace("<i>", "_", $user->about);
+            $user->about = str_replace("</i>", "_", $user->about);
+            $user->about = str_replace("<br>", "\r\n", $user->about);
 
-            return view('user.editor', compact('userdata'))->with('warning', 'Вы заходите на опасную территорию.');
+            return view('user.editor', compact('user'))->with('warning', 'Вы заходите на опасную территорию.');
         }
         return redirect()->route('home')->with('error', 'Пользователь не найден.');
     }
@@ -191,6 +218,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'avatar' => 'nullable|file|mimes:jpeg,jpg,png,gif',
         ]);
+
 
         $image = $request->file('avatar');
 

@@ -19,14 +19,14 @@
             <div class="col mt-3">
                 <div class="form-floating">
                     <input type="text" name="name" class="form-control" id="name"
-                        value="{{ $team->name ?? null }}">
+                        value="{{ old('name') ?? ($team->name ?? null) }}">
                     <label for="name">Название команды</label>
                 </div>
             </div>
             <div class="col mt-3">
                 <div class="form-floating">
                     <input type="text" name="url" class="form-control" id="url"
-                        value="{{ $team->url ?? null }}">
+                        value="{{ old('url') ?? ($team->url ?? null) }}">
                     <label for="url">URL</label>
                     <small class="text-secondary"><i>Ссылка на команду, например exampleTeam</i></small>
                 </div>
@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="form-floating mb-3">
-            <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $team->description ?? null !!}</textarea>
+            <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? ($team->description ?? null) !!}</textarea>
             <label for="description">Описание вашей команды</label>
             <div class="editor-buttons mt-3">
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>

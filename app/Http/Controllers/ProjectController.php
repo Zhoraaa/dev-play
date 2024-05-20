@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Subscribes;
 use App\Models\Tag;
 use App\Models\Snapshots;
 use App\Models\TagToProjectConnection;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Validator;
 
 class ProjectController extends Controller
 {
@@ -18,47 +20,58 @@ class ProjectController extends Controller
 
     public function index($url)
     {
-        $projectdata = Project::where('url', $url)->first();
+        $project = Project::where('url', $url)->first();
 
-        if ($projectdata) {
+        if ($project) {
             // Форматирование даты и времени создания (created_at)
-            $createdAt = Carbon::parse($projectdata->created_at);
+            $createdAt = Carbon::parse($project->created_at);
             $createdAtFormatted = $createdAt->format('d/m/Y H:i');
             $createdAtDiff = $createdAt->diffForHumans();
 
             // Форматирование даты и времени обновления (updated_at)
-            $updatedAt = Carbon::parse($projectdata->updated_at);
+            $updatedAt = Carbon::parse($project->updated_at);
             $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
             $updatedAtDiff = $updatedAt->diffForHumans();
 
             // Формируем окончательные строки для отображения
-            $projectdata->created_at_formatted = "$createdAtDiff (<i class='text-secondary'>$createdAtFormatted</i>)";
-            $projectdata->updated_at_formatted = "$updatedAtDiff (<i class='text-secondary'>$updatedAtFormatted</i>)";
+            $project->created_at_formatted = "$createdAtDiff (<i class='text-secondary'>$createdAtFormatted</i>)";
+            $project->updated_at_formatted = "$updatedAtDiff (<i class='text-secondary'>$updatedAtFormatted</i>)";
 
             // Описываем теги названиями
-            $tags = TagToProjectConnection::where('project_id', '=', $projectdata->id)
+            $tags = TagToProjectConnection::where('project_id', '=', $project->id)
                 ->join('tags', 'tags.id', 'tag_to_project_connections.tag_id')
                 ->select('tags.*')
                 ->get();
 
-            $snapshots = Snapshots::where('project_id', '=', $projectdata->id)
+            $snapshots = Snapshots::where('project_id', '=', $project->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
             return redirect()->back()->with('error', 'Проект не найден');
         }
 
+        $subscribed = false;
+        if (Auth::user()) {
+            $subscribed = Subscribes::where('sub_type', '=', 'project')
+                ->where('sub_for', '=', $project->id)
+                ->where('subscriber_id', '=', Auth::user()->id)
+                ->count() ? true : false;
+            // dd($subscribed);
+        }
+
+
         return view('project.page', [
             'url' => $url,
-            'projectdata' => $projectdata,
+            'project' => $project,
             'tags' => $tags,
             'snapshots' => $snapshots,
+            'subscribed' => $subscribed,
         ]);
     }
 
     public function save(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|max:255', // Обязательное поле, максимум 255 символов
             'url' => [
                 'required',
@@ -80,6 +93,10 @@ class ProjectController extends Controller
             'cover.mimes' => 'Поддерживаемые форматы изображений: jpeg, png, jpg, gif.',
             'cover.max' => 'Максимальный размер изображения: 2048 КБ.',
         ]);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
 
         if ($request->id) {
             $this->update($request);
@@ -94,17 +111,17 @@ class ProjectController extends Controller
     {
         $count = Project::where('url', $url)->count();
         if ($count) {
-            $projectdata = Project::where('url', $url)->first();
-            $projectdata->description = $this->removeLinks($projectdata->description);
-            $projectdata->description = str_replace("<b>", "**", $projectdata->description);
-            $projectdata->description = str_replace("</b>", "**", $projectdata->description);
-            $projectdata->description = str_replace("<i>", "_", $projectdata->description);
-            $projectdata->description = str_replace("</i>", "_", $projectdata->description);
-            $projectdata->description = str_replace("<br>", "\r\n", $projectdata->description);
+            $project = Project::where('url', $url)->first();
+            $project->description = $this->removeLinks($project->description);
+            $project->description = str_replace("<b>", "**", $project->description);
+            $project->description = str_replace("</b>", "**", $project->description);
+            $project->description = str_replace("<i>", "_", $project->description);
+            $project->description = str_replace("</i>", "_", $project->description);
+            $project->description = str_replace("<br>", "\r\n", $project->description);
 
             $tags = Tag::orderBy('name', 'asc')->get();
 
-            $selectedTagIds = TagToProjectConnection::where('project_id', $projectdata->id)
+            $selectedTagIds = TagToProjectConnection::where('project_id', $project->id)
                 ->pluck('tag_id')
                 ->toArray();
 
@@ -114,7 +131,7 @@ class ProjectController extends Controller
             }
 
             return view('project.editor', [
-                'projectdata' => $projectdata,
+                'project' => $project,
                 'tags' => $tags,
                 'selectedTags' => $selectedTags,
             ])->with('warning', 'Вы заходите на опасную территорию.');

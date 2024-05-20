@@ -7,6 +7,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SnapshotsController;
+use App\Http\Controllers\SubscribesController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Models\Tag;
@@ -22,9 +23,7 @@ Route::get('/role-switch/{role}', function ($role) {
 })->middleware('auth')->name('changeRole');
 
 // Конкретные страницы
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/news', [PageController::class, 'news'])->name('news');
 Route::get('/projects', [PageController::class, 'projects'])->name('projects');
 Route::get('/devteams', [PageController::class, 'devTeams'])->name('devTeams');
@@ -73,7 +72,7 @@ Route::get('/new-project', function () {
     return view('project.editor', ['tags' => $tags]);
 })->middleware('auth')->name('projectNew');
 Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
-Route::post('/project/save', [ProjectController::class, 's.ave'])->middleware('auth')->name('projectSaveChanges');
+Route::post('/project/save', [ProjectController::class, 'save'])->middleware('auth')->name('projectSaveChanges');
 Route::get('/project/{url}/edit', [ProjectController::class, 'editor'])->middleware('auth')->name('projectEditor');
 Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->middleware('auth')->name('projectDelete');
 // Снапшоты
@@ -102,6 +101,9 @@ Route::get('/tag/{id}/delete', [TagController::class, 'destroy'])->middleware('a
 Route::get('/admin/tags', [AdminController::class, 'tagList'])->middleware('auth')->name('tagList');
 Route::get('/admin/users', [AdminController::class, 'userList'])->middleware('auth')->name('userList');
 Route::get('/admin/user/{id}', [AdminController::class, 'userEdit'])->middleware('auth')->name('userEdit');
+
+// Подписка
+Route::get('/subscribe/{type}/{id}', [SubscribesController::class, 'subs'])->middleware('auth')->name('subscribe');
 
 // Просмотр файлов
 Route::get('/storage/imgs/users/avatars/{filename}', function ($filename) {

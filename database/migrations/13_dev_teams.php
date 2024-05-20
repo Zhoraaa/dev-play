@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('dev_teams', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('avatar');
+            $table->string('avatar')->nullable();
             $table->string('url');
             $table->text('description');
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));

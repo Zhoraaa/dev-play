@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DevTeam;
 use App\Models\DevToTeamConnection;
+use App\Models\Subscribes;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -37,33 +38,63 @@ class DevTeamController extends Controller
             return redirect()->back()->with('error', 'Команда не найдена');
         }
 
-        switch (DevToTeamConnection::where('team_id', '=', $team->id)
+        $ismember = DevToTeamConnection::where('team_id', '=', $team->id)
             ->where('developer_id', '=', Auth::user()->id)
-            ->first()->role) {
-            default:
-                $canedit = 0;
-                break;
-            case 'Копирайтер':
-                $canedit = 1;
-                break;
-            case 'Разработчик':
-                $canedit = 2;
-                break;
-            case 'Глава':
-                $canedit = 3;
-                break;
+            ->count()
+            ? true : false;
+
+
+        if (!$ismember) {
+            $canedit = 0;
+        } else {
+            switch (
+                DevToTeamConnection::where('team_id', '=', $team->id)
+                    ->where('developer_id', '=', Auth::user()->id)
+                    ->first()
+                    ->role
+            ) {
+                default:
+                    $canedit = 0;
+                    break;
+                case 'Копирайтер':
+                    $canedit = 1;
+                    break;
+                case 'Разработчик':
+                    $canedit = 2;
+                    break;
+                case 'Глава':
+                    $canedit = 3;
+                    break;
+            }
+        }
+
+        $members = DevToTeamConnection::where('team_id', '=', $team->id)
+            ->join('users', 'users.id', 'dev_to_team_connections.developer_id')
+            ->select('users.*', 'dev_to_team_connections.role')
+            ->get();
+
+
+        $subscribed = false;
+        if (Auth::user()) {
+            $subscribed = Subscribes::where('sub_type', '=', 'dev_team')
+                ->where('sub_for', '=', $team->id)
+                ->where('subscriber_id', '=', Auth::user()->id)
+                ->count() ? true : false;
+
         }
 
         return view('devteam.page', [
             'url' => $url,
             'team' => $team,
             'canedit' => $canedit,
+            'members' => $members,
+            'subscribed' => $subscribed
         ]);
     }
 
     public function save(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|max:255', // Обязательное поле, максимум 255 символов
             'url' => [
                 'required',
@@ -85,6 +116,10 @@ class DevTeamController extends Controller
             'cover.mimes' => 'Поддерживаемые форматы изображений: jpeg, png, jpg, gif.',
             'cover.max' => 'Максимальный размер изображения: 2048 КБ.',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         if ($request->id) {
             $this->update($request);

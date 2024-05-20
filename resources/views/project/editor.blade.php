@@ -12,21 +12,21 @@
     {{-- Редактирование --}}
     <form action="{{ route('projectSaveChanges') }}" method="POST" enctype="multipart/form-data" class="m-auto mt-3 w-75">
         @csrf
-        @if (isset($projectdata))
-            <input type="hidden" value="{{ $projectdata->id ?? null }}" name="id">
+        @if (isset($project))
+            <input type="hidden" value="{{ $project->id ?? null }}" name="id">
         @endif
         <div class="row mb-3">
             <div class="col mt-3">
                 <div class="form-floating">
                     <input type="text" name="name" class="form-control" id="name"
-                        value="{{ $projectdata->name ?? null }}">
+                        value="{{ old('name') ?? ($project->name ?? null) }}">
                     <label for="name">Название</label>
                 </div>
             </div>
             <div class="col mt-3">
                 <div class="form-floating">
                     <input type="text" name="url" class="form-control" id="url"
-                        value="{{ $projectdata->url ?? null }}">
+                        value="{{ old('url') ?? ($project->url ?? null) }}">
                     <label for="url">URL</label>
                     <small class="text-secondary"><i>Ссылка на проект, например exampleProj</i></small>
                 </div>
@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="form-floating mb-3">
-            <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $projectdata->description ?? null !!}</textarea>
+            <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $project->description ?? null !!}</textarea>
             <label for="description">Описание вашего проекта</label>
             <div class="editor-buttons mt-3">
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
@@ -55,8 +55,8 @@
             </div>
             <div class="col">
                 <label for="avatar">Текущая обложка:</label>
-                @if (isset($projectdata->cover))
-                    <img id="avatar" src="{{ $projectdata->cover }}" alt="Текущий аватар {{ $projectdata->cover }}">
+                @if (isset($project->cover))
+                    <img id="avatar" src="{{ $project->cover }}" alt="Текущий аватар {{ $project->cover }}">
                 @else
                     <p>Отсутствует.</p>
                 @endif

@@ -59,7 +59,7 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-floating mb-3">
-                                    <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $projectdata->description ?? null !!}</textarea>
+                                    <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $project->description ?? null !!}</textarea>
                                     <label for="text">Давным-давно...</label>
                                     <div class="editor-buttons mt-3">
                                         <button type="button" id="boldBtn"

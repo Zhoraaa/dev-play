@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Validator;
 
 class PostController extends Controller
 {
@@ -58,7 +59,7 @@ class PostController extends Controller
     }
     public function save(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make([$request->all(),
             'text' => 'required', // Обязательное поле для описания
             'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Разрешенные типы файлов и максимальный размер
         ], [
@@ -67,6 +68,10 @@ class PostController extends Controller
             'cover.mimes' => 'Поддерживаемые форматы изображений: jpeg, png, jpg, gif.',
             'cover.max' => 'Максимальный размер изображения: 2048 КБ.',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         if ($request->id) {
             $this->update($request);

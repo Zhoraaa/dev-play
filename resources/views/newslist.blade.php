@@ -24,8 +24,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-floating mb-3">
-                        <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $projectdata->description ?? null !!}</textarea>
-                        <label for="text">Давным-давно...</label>
+                        <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? null !!}</textarea>
+                        <label for="text">Что нового?</label>
                         <div class="editor-buttons mt-3">
                             <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
                             <button type="button" id="italicBtn" class="btn btn-outline-secondary"><i>Курсив</i></button>

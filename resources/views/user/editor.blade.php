@@ -16,19 +16,19 @@
             <div class="col">
                 <div class="form-floating">
                     <input type="text" name="login" class="form-control" id="login" placeholder="name@example.com"
-                        value="{{ $userdata->login }}">
+                        value="{{ $user->login }}">
                     <label for="login">Никнейм</label>
                 </div>
             </div>
             <div class="col">
                 <div class="form-floating">
-                    <input type="email" name="email" class="form-control" id="email" value="{{ $userdata->email }}">
+                    <input type="email" name="email" class="form-control" id="email" value="{{ $user->email }}">
                     <label for="email">Email</label>
                 </div>
             </div>
         </div>
         <div class="form-floating mb-3">
-            <textarea name="about" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $userdata->about !!}</textarea>
+            <textarea name="about" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $user->about !!}</textarea>
             <label for="about">О вас</label>
             <div class="editor-buttons mt-3">
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
