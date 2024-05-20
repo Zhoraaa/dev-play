@@ -46,7 +46,7 @@
                                         Забанить
                                     </a>
                                 @endif
-                            @else
+                            @elseif (auth()->user()->id != $user->id)
                                 <a href="{{ route('userEdit', ['id' => $user->id, 'ban' => false]) }}"
                                     class="btn btn-outline-warning">
                                     Разбанить

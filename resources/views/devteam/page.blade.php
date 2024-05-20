@@ -21,35 +21,37 @@
                 @endif
             </h2>
             <div>
-                {{-- Подписка --}}
-                @php
-                    $substyle = !$subscribed ? 'success' : 'secondary';
-                    $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
-                    $title = !$subscribed
-                        ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этой команды'
-                        : 'Отказаться от подписки на обновления команды';
-                @endphp
-                <a href="{{ route('subscribe', ['type' => 'dev_team', 'id' => $team->id]) }}"
-                    class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
+                @auth
+                    @if (!$canedit)
+                        {{-- Подписка --}}
+                        @php
+                            $substyle = !$subscribed ? 'success' : 'secondary';
+                            $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
+                            $title = !$subscribed
+                                ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этой команды'
+                                : 'Отказаться от подписки на обновления команды';
+                        @endphp
+                        <a href="{{ route('subscribe', ['type' => 'dev_team', 'id' => $team->id]) }}"
+                            class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
+                    @endif
+                @endauth
                 {{-- Управление --}}
                 @if ($canedit)
                     @switch($canedit)
                         @case(1)
                         @case(2)
-
-                        @case(3)
                             {{-- Триггер модальки нового поста --}}
                             <button class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#newPost">Новый
                                 пост</button>
                             {{-- Модалька нового поста --}}
                             <form action="{{ route('postSave', ['from_team' => true, 'team' => $team->id]) }}" method="post"
-                                class="modal fade" id="postEditorModal" tabindex="-1" aria-labelledby="postEditorModalLabel"
+                                class="modal fade" id="newPost" tabindex="-1" aria-labelledby="newPostLabel"
                                 aria-hidden="true">
                                 @csrf
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="postEditorModalLabel">Написать пост</h1>
+                                            <h1 class="modal-title fs-5" id="newPostLabel">Написать пост</h1>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                         </div>
@@ -71,6 +73,13 @@
                                                 <input class="form-control" type="file" id="filesMultiple" name="images"
                                                     multiple>
                                             </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="show_true_author"
+                                                    name="show_true_author">
+                                                <label class="form-check-label" for="show_true_author">
+                                                    Показывать имя автора
+                                                </label>
+                                            </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скрыть</button>
@@ -81,12 +90,12 @@
                             </form>
                         @break
 
+                        @case(1)
                         @case(2)
-                        @case(3)
                             <a href="{{ route('projectNew') }}" class="btn btn-success mb-1">+ Новый проект</a>
                         @break
 
-                        @case(3)
+                        @case(2)
                             {{-- Триггер модальки настройки аватарки --}}
                             <button class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#avatarModal">Настройка
                                 аватара</button>
@@ -176,8 +185,8 @@
             @foreach ($members as $member)
                 <div class="d-flex flex-wrap align-items-center">
                     @if ($member->avatar)
-                        <div class="mr-2 avatar avatar-medium">
-                            <img src="{{ asset('storage/imgs/users/avatars/' . $team->avatar) }}" alt="">
+                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                            <img src="{{ asset('storage/imgs/users/avatars/' . $member->avatar) }}" alt="">
                         </div>
                     @endif
                     <div>

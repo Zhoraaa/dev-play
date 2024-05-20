@@ -34,8 +34,8 @@ class ProjectController extends Controller
             $updatedAtDiff = $updatedAt->diffForHumans();
 
             // Формируем окончательные строки для отображения
-            $project->created_at_formatted = "$createdAtDiff (<i class='text-secondary'>$createdAtFormatted</i>)";
-            $project->updated_at_formatted = "$updatedAtDiff (<i class='text-secondary'>$updatedAtFormatted</i>)";
+            $project->created_at_formatted = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $project->updated_at_formatted = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
 
             // Описываем теги названиями
             $tags = TagToProjectConnection::where('project_id', '=', $project->id)

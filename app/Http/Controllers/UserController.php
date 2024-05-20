@@ -21,7 +21,10 @@ class UserController extends Controller
         if ($count) {
             $user = User::where('login', $login)
                 ->join('roles', 'users.role_id', 'roles.id')
-                ->select('users.*', 'roles.name as role')
+                ->select(
+                    'users.*',
+                    'roles.name as role'
+                )
                 ->first();
 
             $user->created_at = Carbon::parse($user->created_at);
@@ -30,7 +33,7 @@ class UserController extends Controller
             $user->created_at = $user->created_at->diffForHumans() . ' <i class="text-secondary">(' . Carbon::parse($user->created_at)->format('d/m/Y H:i') . ')</i>';
 
             $subscribed = false;
-            if (Auth::user()){
+            if (Auth::user()) {
                 $subscribed = Subscribes::where('sub_type', '=', 'developer')
                     ->where('sub_for', '=', $user->id)
                     ->where('subscriber_id', '=', Auth::user()->id)
@@ -80,7 +83,8 @@ class UserController extends Controller
             'password' => $userRaw->password,
             'avatar' => null,
             'role_id' => 1,
-            'banned' => 0
+            'banned' => 0,
+            'created_at' => now()
         ]);
 
         Auth::login($user);
@@ -205,10 +209,21 @@ class UserController extends Controller
 
     public function beDeveloper()
     {
-        // dd(Auth::user());
-        Auth::user()->update(['role_id' => 2]);
+        if (
+            Auth::user()->email &&
+            Auth::user()->about &&
+            Auth::user()->avatar
+        ) {
+            if (Auth::user()->banned) {
+                return redirect()->back()->with('error', 'Забаненный пользователь не может стать разработчиком!');
+            } else {
+                Auth::user()->update(['role_id' => 2]);
 
-        return redirect()->back()->with('success', 'Теперь вы разработчик!');
+                return redirect()->back()->with('success', 'Теперь вы разработчик!');
+            }
+        } else {
+            return redirect()->back()->with('error', 'Заполните все данные о пользователе, чтобы стать разработчиком!');
+        }
         // return redirect()->back()->with('error', 'Ошибка, не заполнены необходимые данные');
     }
 

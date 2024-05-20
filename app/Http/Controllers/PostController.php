@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Post;
+use App\Models\PostMedia;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Validator;
 
 class PostController extends Controller
@@ -16,17 +20,35 @@ class PostController extends Controller
         $post = Post::where('posts.id', '=', $id)
             ->leftJoin('users', 'users.id', 'posts.author_id')
             ->leftJoin('dev_teams', 'dev_teams.id', 'posts.author_mask')
+            ->leftJoin('post_media', 'post_media.post_id', '=', 'posts.id')
             ->select(
                 'posts.*',
                 'users.login as author',
                 'users.avatar',
                 'dev_teams.name as showing_author',
                 'dev_teams.url as showing_author_url',
+                DB::raw('GROUP_CONCAT(post_media.file_name) as media_files')
             )
+            ->groupBy('posts.id', 'users.login', 'users.avatar', 'dev_teams.name', 'dev_teams.url')
             ->first();
 
-        $post->formatted_created_at = $post->created_at->format('d.m.Y H:i');
-        $post->formatted_updated_at = $post->updated_at->format('d.m.Y H:i');
+        if (!$post) {
+            return redirect()->back()->with('error', 'Пост не найден');
+        }
+        // Форматирование даты и времени создания (created_at)
+        $createdAt = Carbon::parse($post->created_at);
+        $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+        $createdAtDiff = $createdAt->diffForHumans();
+
+        // Форматирование даты и времени обновления (updated_at)
+        $updatedAt = Carbon::parse($post->updated_at);
+        $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+        $updatedAtDiff = $updatedAt->diffForHumans();
+
+        // Формируем окончательные строки для отображения
+        $post->created_at_formatted = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+        $post->updated_at_formatted = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+
 
         $canedit = false;
         if (isset(Auth::user()->id) && $post->author === Auth::user()->login) {
@@ -46,8 +68,19 @@ class PostController extends Controller
         $commsCount = Comment::where('post_id', '=', $post->id)->count();
 
         foreach ($comms as $comm) {
-            $comm->formatted_created_at = $comm->created_at->format('d.m.Y H:i');
-            $comm->formatted_updated_at = $comm->updated_at->format('d.m.Y H:i');
+            // Форматирование даты и времени создания (created_at)
+            $createdAt = Carbon::parse($post->created_at);
+            $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+            $createdAtDiff = $createdAt->diffForHumans();
+
+            // Форматирование даты и времени обновления (updated_at)
+            $updatedAt = Carbon::parse($post->updated_at);
+            $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+            $updatedAtDiff = $updatedAt->diffForHumans();
+
+            // Формируем окончательные строки для отображения
+            $comm->created_at_formatted = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $comm->updated_at_formatted = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
         }
 
         return view('post.page', [
@@ -57,9 +90,10 @@ class PostController extends Controller
             'commsCount' => $commsCount,
         ]);
     }
-    public function save(Request $request)
+    public function save(Request $request, $from_team, $team)
     {
-        $validator = Validator::make([$request->all(),
+        $validator = Validator::make([
+            $request->all(),
             'text' => 'required', // Обязательное поле для описания
             'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Разрешенные типы файлов и максимальный размер
         ], [
@@ -77,7 +111,7 @@ class PostController extends Controller
             $this->update($request);
             $string = 'Данные обновлены.';
         } else {
-            $this->create($request);
+            $this->create($request, $from_team, $team);
             $string = 'Пост сохранён.';
         }
         return redirect()->back()->with('success', $string);
@@ -102,76 +136,41 @@ class PostController extends Controller
         return redirect()->route('home')->with('error', 'Проект не найден.');
     }
 
-    private function create($data)
+    private function create($data, $from_team, $team)
     {
+        // Обработка текста по ключ. символам
         $data->text = strip_tags($data->text);
         $data->text = $this->handle($data->text, '**');
         $data->text = $this->handle($data->text, '_');
         $data->text = str_replace("\r\n", "<br>", $data->text);
         $data->text = $this->handleLinks($data->text);
 
-        $proj = Post::create([
+        // Применение маски авторства в зависимости от пришедших данных
+        $author_mask = $from_team ? $team : null;
+
+        // Запись причастного проекта
+        $projID = $data->projID ?? null;
+
+        // Запись о новом опсте
+        $post = Post::create([
             'author_id' => Auth::user()->id,
-            'author_mask' => null,
-            'for_project' => null,
+            'author_mask' => $author_mask,
+            'for_project' => $projID,
             'show_true_author' => 1,
             'text' => $data->text,
             'type_id' => 1,
         ]);
-    }
-    private function update(Request $newData)
-    {
-        // Записываем важные данные в отдельный массив.
-        $newDataText = $newData->all();
-        unset($newDataText['_token']);
-        $newDataText = array_filter($newDataText, function ($key) {
-            return strpos($key, "tag-") !== 0;
-        }, ARRAY_FILTER_USE_KEY);
-        // Отделяем проставленные теги от остальных данных.
-        $tagsRaw = array_filter($newData->all(), function ($key) {
-            return strpos($key, "tag-") === 0;
-        }, ARRAY_FILTER_USE_KEY);
-        $tags = array();
-        foreach ($tagsRaw as $key => $val) {
-            $tagID = str_replace('tag-', '', $key);
-            $tags += [$tagID => $tagID];
-        }
-        // Теперь у нас есть массив текстовых данных и массив отмеченных тегов
 
-        // Достаём старые данные
-        $oldData = Post::where('id', $newData->id)->first();
-
-        // В случае успешной проверки безопасности работаем дальше
-        if (Auth::user()->id == $oldData->author_id) {
-            // Преобразовываем текст описания по ключевым символам
-            $newDataText['text'] = strip_tags($newDataText['text']);
-            $newDataText['text'] = $this->handle($newDataText['text'], '**');
-            $newDataText['text'] = $this->handle($newDataText['text'], '_');
-            $newDataText['text'] = str_replace("\r\n", "<br>", $newDataText['text']);
-            $newDataText['text'] = $this->handleLinks($newDataText['text']);
-            // Заготавливаем массив
-            $differences = array();
-
-            foreach ($newDataText as $key => $value) {
-                if ($newDataText[$key] != $oldData[$key] && $newDataText) {
-                    // Записываем в этот массив пришедшие данные, отличающиеся от таковых в базе
-                    $differences += [$key => $value];
-                }
-            }
-
-            // Обновляем запись в базе.
-            $oldData->update($differences);
-            return redirect()->back()->with('success', 'Данные сохранены');
-        } else {
-            return redirect()->back()->with('error', 'Отказано в доступе');
-        }
+        $this->multiloadMedia($data, $post->id);
     }
 
     public function destroy($id)
     {
+        Comment::where('post_id', $id)->delete();
+        PostMedia::where('post_id', $id)->delete();
         Post::where('id', $id)->delete();
 
-        return redirect()->back()->with('success', 'Пост удалён.');
+        return redirect()->route('news')->with('success', 'Пост удалён.');
     }
 
     // Обработчики текста
@@ -229,5 +228,31 @@ class PostController extends Controller
 
         // Возвращаем обработанный текст
         return $processedText;
+    }
+
+    // Обработка изображений
+    private function multiloadMedia($data, $post_id)
+    {
+        if ($data->hasFile('media')) {
+            $files = $data->file('media');
+            $fileNames = [];
+
+            foreach ($files as $file) {
+                // Генерация имени файла
+                $fileName = 'post_' . $post_id . '_' . $file->getClientOriginalName();
+                $mediaPath = $file->storeAs('public/imgs/posts/media/', $fileName);
+
+                // Сохранение пути файла для дальнейшего использования
+                $fileNames[] = $fileName;
+
+                // Сохранение в базе данных
+                PostMedia::create([
+                    'post_id' => $post_id,
+                    'author_id' => Auth::user()->id,
+                    'file_name' => $fileName,
+                    'created_at' => false
+                ]);
+            }
+        }
     }
 }

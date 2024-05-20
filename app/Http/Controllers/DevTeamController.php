@@ -56,14 +56,11 @@ class DevTeamController extends Controller
                 default:
                     $canedit = 0;
                     break;
-                case 'Копирайтер':
+                case 'Разработчик':
                     $canedit = 1;
                     break;
-                case 'Разработчик':
-                    $canedit = 2;
-                    break;
                 case 'Глава':
-                    $canedit = 3;
+                    $canedit = 2;
                     break;
             }
         }

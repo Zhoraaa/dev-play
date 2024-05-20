@@ -38,7 +38,7 @@
             class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $user->banned ? 'alert alert-danger' : null }}">
             @if ($user->avatar)
                 <div class="avatar avatar-big">
-                    <img src="{{ asset('storage/imgs/teams/avatars/' . $user->avatar) }}" alt="">
+                    <img src="{{ asset('storage/imgs/users/avatars/' . $user->avatar) }}" alt="">
                 </div>
             @endif
             <div class="d-flex flex-wrap justify-content-between mb-2">

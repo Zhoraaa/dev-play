@@ -3,10 +3,14 @@
         <a class="navbar-brand" href="#">@yield('title')</a>
         @auth
             <div>
-                <a href="{{ route('changeRole', ['role' => 1]) }}" class="btn btn-{{ auth()->user()->role_id !== 1 ? 'outline-' : null }}light">Пользователь</a>
-                <a href="{{ route('changeRole', ['role' => 2]) }}" class="btn btn-{{ auth()->user()->role_id !== 2 ? 'outline-' : null }}success">Разработчик</a>
-                <a href="{{ route('changeRole', ['role' => 3]) }}" class="btn btn-{{ auth()->user()->role_id !== 3 ? 'outline-' : null }}warning">Модератор</a>
-                <a href="{{ route('changeRole', ['role' => 4]) }}" class="btn btn-{{ auth()->user()->role_id !== 4 ? 'outline-' : null }}danger">Администратор</a>
+                <a href="{{ route('changeRole', ['role' => 1]) }}"
+                    class="btn btn-{{ auth()->user()->role_id !== 1 ? 'outline-' : null }}light">Пользователь</a>
+                <a href="{{ route('changeRole', ['role' => 2]) }}"
+                    class="btn btn-{{ auth()->user()->role_id !== 2 ? 'outline-' : null }}success">Разработчик</a>
+                <a href="{{ route('changeRole', ['role' => 3]) }}"
+                    class="btn btn-{{ auth()->user()->role_id !== 3 ? 'outline-' : null }}warning">Модератор</a>
+                <a href="{{ route('changeRole', ['role' => 4]) }}"
+                    class="btn btn-{{ auth()->user()->role_id !== 4 ? 'outline-' : null }}danger">Администратор</a>
             </div>
         @endauth
         <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas"
@@ -46,15 +50,14 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Для того, чтобы стать разработчиком, вам необходимо заполнить свой профиль.
-                                <br>
-                                <br>
-                                Добавить добавьте описание профиля, если вы этого ещё не сделали, также стоит добавить
-                                аватар.
-                                <br>
-                                <br>
-                                Нажимая на кнопку "Стать разработчиком" вы автоматически соглашаетесь со всеми
-                                <a href="{{ route('publicationRules') }}">правилами публикации программных продуктов</a>.
+                                <p class="mb-3">
+                                    Для того, чтобы стать разработчиком, вам необходимо заполнить свой профиль, добавить
+                                    аватар, почту и написать информацию о себе. и не быть забаненным на сайте.
+                                </p>
+                                <p class="mb-3">
+                                    Нажимая на кнопку "Стать разработчиком" вы автоматически соглашаетесь со всеми
+                                    <a href="{{ route('publicationRules') }}">правилами публикации программных продуктов</a>.
+                                </p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>

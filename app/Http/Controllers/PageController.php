@@ -65,7 +65,9 @@ class PageController extends Controller
                 'users.avatar',
                 'users.role_id',
                 'users.login as author',
-                'dev_teams.name as dev_team',
+                'dev_teams.url as author_team_url',
+                'dev_teams.name as author_team',
+                'dev_teams.avatar as author_team_avatar',
                 DB::raw('GROUP_CONCAT(DISTINCT tags.name ORDER BY tags.name SEPARATOR ", ") as tags')
             )
             ->groupBy('projects.id');
@@ -163,6 +165,7 @@ class PageController extends Controller
                 'users.role_id',
                 'dev_teams.name as showing_author',
                 'dev_teams.url as showing_author_url',
+                'dev_teams.avatar as showing_author_avatar',
             )
             ->get();
 
@@ -171,6 +174,7 @@ class PageController extends Controller
             $post->formatted_updated_at = $post->updated_at->format('d.m.Y H:i');
         }
 
+        // dd($news);
         return view('newslist', [
             'news' => $news
         ]);

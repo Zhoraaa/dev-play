@@ -85,7 +85,7 @@ Route::get('/project/{url}/snapshot/{build}/edit', [SnapshotsController::class, 
 Route::post('/project/{url}/snapshot/{build}/delete', [SnapshotsController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');
 
 // Посты
-Route::post('/post-save', [PostController::class, 'save'])->middleware('auth')->name('postSave');
+Route::post('/post-save/{from_team}/{team}', [PostController::class, 'save'])->middleware('auth')->name('postSave');
 Route::get('/post/{id}', [PostController::class, 'index'])->name('post');
 Route::get('/post/{id}/delete', [PostController::class, 'destroy'])->middleware('auth')->name('postDel');
 

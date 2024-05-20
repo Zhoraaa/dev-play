@@ -73,7 +73,7 @@
             <label for="password">Пароль для подтверждения</label>
         </div> --}}
 
-        <!-- Модаль -->
+        <!-- Модаль тегов -->
         <div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
