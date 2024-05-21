@@ -322,7 +322,7 @@ class DevTeamController extends Controller
             $imagePath = $image->storeAs('public/imgs/teams/avatars/', $fileName);
 
             // Обновление записи в базе
-            User::where('id', Auth::user()->id)
+            DevTeam::where('url', $url)
                 ->update([
                     'avatar' => $fileName
                 ]);
@@ -342,7 +342,7 @@ class DevTeamController extends Controller
             Storage::delete('public/imgs/teams/avatars/' . Auth::user()->avatar);
 
             // Очистка поля avatar в базе данных
-            User::where('id', Auth::user()->id)
+            DevTeam::where('url', $url)
                 ->update([
                     'avatar' => null
                 ]);
