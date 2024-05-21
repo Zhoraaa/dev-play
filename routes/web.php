@@ -65,6 +65,8 @@ Route::get('/team/{url}', [DevTeamController::class, 'index'])->name('devteam');
 Route::post('/team/save', [DevTeamController::class, 'save'])->middleware('auth')->name('devteamSave');
 Route::get('/team/{url}/edit', [DevTeamController::class, 'editor'])->middleware('auth')->name('devteamEditor');
 Route::post('/team/{url}/delete', [DevTeamController::class, 'destroy'])->middleware('auth')->name('devteamDelete');
+Route::post('/team/{url}/new-avatar', [DevTeamController::class, 'avatarUpdate'])->middleware('auth')->name('teamAvatarUpdate');
+Route::get('/team/{url}/del-avatar', [DevTeamController::class, 'avatarDelete'])->middleware('auth')->name('teamAvatarDelete');
 
 // Проекты
 Route::get('/new-project', function () {
@@ -104,14 +106,3 @@ Route::get('/admin/user/{id}', [AdminController::class, 'userEdit'])->middleware
 
 // Подписка
 Route::get('/subscribe/{type}/{id}', [SubscribesController::class, 'subs'])->middleware('auth')->name('subscribe');
-
-// Просмотр файлов
-Route::get('/storage/imgs/users/avatars/{filename}', function ($filename) {
-    $path = storage_path('app/public/imgs/users/avatars/' . $filename);
-
-    if (!file_exists($path)) {
-        abort(404);
-    }
-
-    return response()->file($path);
-});
