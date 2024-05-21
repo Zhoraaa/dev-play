@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('title')
-    Проекты
+    Главная - проекты
 @endsection
 
 @section('body')
@@ -14,7 +14,7 @@
             <div>
                 @if (auth()->user()->role_id == 2 && !auth()->user()->banned)
                     <a href="{{ route('projectNew') }}" class="btn btn-success mb-2">+ Новый проект</a>
-                    <a href="{{ route('projects', ['author_id' => auth()->user()->id]) }}" class="btn btn-primary mb-2">Мои
+                    <a href="{{ route('home', ['author_id' => auth()->user()->id]) }}" class="btn btn-primary mb-2">Мои
                         проекты</a>
                 @endif
             </div>
@@ -33,7 +33,7 @@
     @endif
 
     {{-- Модалька фильтрации --}}
-    <form action="{{ route('projects') }}" method="project" class="modal fade" id="filters" tabindex="-1"
+    <form action="{{ route('home') }}" method="project" class="modal fade" id="filters" tabindex="-1"
         aria-labelledby="filtersLabel" aria-hidden="true">
         @csrf
         <div class="modal-dialog">
@@ -51,7 +51,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="tag{{ $tag->id }}"
                                         name="tag-{{ $tag->id }}"
-                                        {{ isset($selectedTags) && in_array($tag->id,$selectedTags) ? 'checked' : null }}>
+                                        {{ isset($selectedTags) && in_array($tag->id, $selectedTags) ? 'checked' : null }}>
                                     <label class="form-check-label" for="tag{{ $tag->id }}">
                                         {{ $tag->name }}
                                     </label>
@@ -85,27 +85,46 @@
                         <h3>{{ $project->name }}</h3>
                     </a>
                     <div>
-                        <i class="text-secondary">
-                            ({{ $project->formatted_created_at }})
-                        </i>
+                        <div>
+                            {!! $project->formatted_created_at !!}
+                        </div>
                     </div>
                 </div>
-                <a href="{{ route('userpage', ['login' => $project->author]) }}"
-                    class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
-                    <div class="avatar avatar-small" style="margin-right: 10px">
-                        <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}" alt="">
-                    </div>
-                    <p class="mb-0">
-                        <i>
-                            {{ $project->author }}
-                        </i>
-                    </p>
-                </a>
+                @if ($project->author_team_url)
+                    <a href="{{ route('devteam', ['url' => $project->author_team_url]) }}"
+                        class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
+                        @if ($project->author_team_avatar)
+                            <div class="avatar avatar-small" style="margin-right: 10px">
+                                <img src="{{ asset('storage/imgs/teams/avatars/' . $project->author_team_avatar) }}"
+                                    alt="">
+                            </div>
+                        @endif
+                        <p class="mb-0">
+                            <i>
+                                {{ $project->author_team }} (Команда разработчиков)
+                            </i>
+                        </p>
+                    </a>
+                @else
+                    <a href="{{ route('userpage', ['login' => $project->author]) }}"
+                        class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
+                        @if ($project->avatar)
+                            <div class="avatar avatar-small" style="margin-right: 10px">
+                                <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}" alt="">
+                            </div>
+                        @endif
+                        <p class="mb-0">
+                            <i>
+                                {{ $project->author }} (Разработчик)
+                            </i>
+                        </p>
+                    </a>
+                @endif
                 <i class="text-secondary">
                     <b>
                         Теги:
                     </b>
-                    {{$project->tags}}
+                    {{ $project->tags }}
                 </i>
                 <div class="mb-2">
                     <p>

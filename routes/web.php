@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DevTeamController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
@@ -10,22 +11,22 @@ use App\Http\Controllers\SnapshotsController;
 use App\Http\Controllers\SubscribesController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
+use App\Models\DevToTeamConnection;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/role-switch/{role}', function ($role) {
-    Auth::user()->update([
-        'role_id' => $role
-    ]);
-    return redirect()->back();
-})->middleware('auth')->name('changeRole');
+// Route::get('/role-switch/{role}', function ($role) {
+//     Auth::user()->update([
+//         'role_id' => $role
+//     ]);
+//     return redirect()->back();
+// })->middleware('auth')->name('changeRole');
 
 // Конкретные страницы
-Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/', [PageController::class, 'projects'])->name('home');
 Route::get('/news', [PageController::class, 'news'])->name('news');
-Route::get('/projects', [PageController::class, 'projects'])->name('projects');
 Route::get('/devteams', [PageController::class, 'devTeams'])->name('devTeams');
 Route::get('/rules/publication', function () {
     return view('rules.publication');
@@ -71,7 +72,17 @@ Route::get('/team/{url}/del-avatar', [DevTeamController::class, 'avatarDelete'])
 // Проекты
 Route::get('/new-project', function () {
     $tags = Tag::orderBy('name', 'asc')->get();
-    return view('project.editor', ['tags' => $tags]);
+
+    $teams = DevToTeamConnection::where('dev_to_team_connections.developer_id', Auth::user()->id)
+        ->where('role', '!=', 'Приглашён')
+        ->join('dev_teams', 'dev_to_team_connections.team_id', '=', 'dev_teams.id')
+        ->select('dev_teams.*', 'dev_to_team_connections.developer_id')
+        ->get();
+
+    return view('project.editor', [
+        'tags' => $tags,
+        'teams' => $teams
+    ]);
 })->middleware('auth')->name('projectNew');
 Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
 Route::post('/project/save', [ProjectController::class, 'save'])->middleware('auth')->name('projectSaveChanges');
@@ -106,3 +117,6 @@ Route::get('/admin/user/{id}', [AdminController::class, 'userEdit'])->middleware
 
 // Подписка
 Route::get('/subscribe/{type}/{id}', [SubscribesController::class, 'subs'])->middleware('auth')->name('subscribe');
+
+// Загрузка файлов
+Route::get('/download/{$file}', [FileController::class, 'download'])->name('download');

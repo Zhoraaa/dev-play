@@ -64,7 +64,7 @@
                 Версия опубликована:
             </p>
             <span class="d-block">
-                {!! $builddata->created_at_formatted !!}
+                {!! $builddata->formatted_created_at !!}
             </span>
         </div>
         @if ($warning)
@@ -73,7 +73,7 @@
                     Осторожно! Версия была отредактирована:
                 </p>
                 <span class="d-block">
-                    {!! $builddata->updated_at_formatted !!}
+                    {!! $builddata->formatted_updated_at !!}
                 </span>
             </div>
         @endif

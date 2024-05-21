@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DevTeam;
+use App\Models\DevToTeamConnection;
 use App\Models\Project;
 use App\Models\Subscribes;
 use App\Models\Tag;
@@ -34,8 +36,8 @@ class ProjectController extends Controller
             $updatedAtDiff = $updatedAt->diffForHumans();
 
             // Формируем окончательные строки для отображения
-            $project->created_at_formatted = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
-            $project->updated_at_formatted = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+            $project->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $project->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
 
             // Описываем теги названиями
             $tags = TagToProjectConnection::where('project_id', '=', $project->id)
@@ -130,10 +132,19 @@ class ProjectController extends Controller
                 $selectedTags[$tag->id] = in_array($tag->id, $selectedTagIds) ? 'checked' : null;
             }
 
+            $teams = DevToTeamConnection::where('dev_to_team_connections.develper_id', '=', Auth::user()->id)
+                ->where('role', '!=', 'Приглашён')
+                ->join('dev_teams', 'dev_teams.id', 'dev_to_team_connections.team_id')
+                ->select(
+                    'dev_teams.*'
+                )
+                ->get();
+
             return view('project.editor', [
                 'project' => $project,
                 'tags' => $tags,
                 'selectedTags' => $selectedTags,
+                'teams' => $teams
             ])->with('warning', 'Вы заходите на опасную территорию.');
         }
         return redirect()->route('home')->with('error', 'Проект не найден.');

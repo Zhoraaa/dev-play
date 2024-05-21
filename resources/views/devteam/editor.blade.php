@@ -31,13 +31,6 @@
                     <small class="text-secondary"><i>Ссылка на команду, например exampleTeam</i></small>
                 </div>
             </div>
-            <div class="col mt-3">
-                <!-- Вызов модали -->
-                <button type="button" class="w-100 pt-3 pb-3 btn btn-success" data-bs-toggle="modal"
-                    data-bs-target="#tagsModal">
-                    Пригласить в команду...
-                </button>
-            </div>
         </div>
         <div class="form-floating mb-3">
             <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? ($team->description ?? null) !!}</textarea>
@@ -46,35 +39,6 @@
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
                 <button type="button" id="italicBtn" class="btn btn-outline-secondary"><i>Курсив</i></button>
                 <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить ссылку</button>
-            </div>
-        </div>
-
-        <!-- Модаль -->
-        <div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="tagsModalLabel">Отметьте необходимые теги</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="overflow-y-scroll" style="max-height: 35vh">
-                            {{-- Генерация списка потенциальных разработчиков --}}
-                            @foreach ($devs as $dev)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="dev{{ $dev->id }}"
-                                        name="dev-{{ $dev->id }}">
-                                    <label class="form-check-label" for="dev{{ $dev->id }}">
-                                        {{ $dev->login }}
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    </div>
-                </div>
             </div>
         </div>
 

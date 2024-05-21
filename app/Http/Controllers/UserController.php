@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DevToTeamConnection;
+use App\Models\Post;
+use App\Models\Project;
 use App\Models\Subscribes;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Storage;
 use Validator;
@@ -40,10 +44,74 @@ class UserController extends Controller
                     ->count() ? true : false;
             }
 
+            // Список проектов созданных пользователем
+            $projects = Project::leftJoin('users', 'users.id', '=', 'projects.author_id')
+                ->leftJoin('dev_teams', 'dev_teams.id', '=', 'projects.team_rights_id')
+                ->leftJoin('tag_to_project_connections', 'projects.id', '=', 'tag_to_project_connections.project_id')
+                ->leftJoin('tags', 'tags.id', '=', 'tag_to_project_connections.tag_id')
+                ->select(
+                    'projects.*',
+                    'users.avatar',
+                    'users.role_id',
+                    'users.login as author',
+                    'dev_teams.url as author_team_url',
+                    'dev_teams.name as author_team',
+                    'dev_teams.avatar as author_team_avatar',
+                    DB::raw('GROUP_CONCAT(DISTINCT tags.name ORDER BY tags.name SEPARATOR ", ") as tags')
+                )
+                ->where('projects.author_id', '=', $user->id)
+                ->groupBy('projects.id')
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            // Список постов, написанных пользователем недавно
+            $posts = Post::orderBy('created_at', 'desc')
+                ->where('type_id', '=', 1)
+                ->leftJoin('users', 'users.id', 'posts.author_id')
+                ->leftJoin('dev_teams', 'dev_teams.id', 'posts.author_mask')
+                ->select(
+                    'posts.*',
+                    'users.login as author',
+                    'users.avatar',
+                    'users.role_id',
+                    'dev_teams.name as showing_author',
+                    'dev_teams.url as showing_author_url',
+                    'dev_teams.avatar as showing_author_avatar',
+                )
+                ->where('author_id', '=', $user->id)
+                ->get(3);
+
+
+            // Список участников
+            $teams = DevToTeamConnection::where('developer_id', '=', $user->id)
+                ->join('dev_teams', 'dev_teams.id', 'dev_to_team_connections.team_id')
+                ->select('dev_teams.*', 'dev_to_team_connections.role')
+                ->get();
+
+
+            foreach ($posts as $post) {
+                // Форматирование даты и времени создания (created_at)
+                $createdAt = Carbon::parse($post->created_at);
+                $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+                $createdAtDiff = $createdAt->diffForHumans();
+
+                // Форматирование даты и времени обновления (updated_at)
+                $updatedAt = Carbon::parse($post->updated_at);
+                $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+                $updatedAtDiff = $updatedAt->diffForHumans();
+
+                // Формируем окончательные строки для отображения
+                $post->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+                $post->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+            }
+
             return view('user.page', [
                 'user_exist' => true,
                 'user' => $user,
                 'subscribed' => $subscribed,
+                'teams' => $teams,
+                'posts' => $posts,
+                'projects' => $projects
             ]);
         }
 

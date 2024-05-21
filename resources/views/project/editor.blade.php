@@ -48,30 +48,12 @@
                 <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить ссылку</button>
             </div>
         </div>
-        <div class="row mb-3">
-            <div class="col">
-                <label for="formFile" class="form-label">Обложка</label>
-                <input class="form-control" type="file" id="formFile">
-            </div>
-            <div class="col">
-                <label for="avatar">Текущая обложка:</label>
-                @if (isset($project->cover))
-                    <img id="avatar" src="{{ $project->cover }}" alt="Текущий аватар {{ $project->cover }}">
-                @else
-                    <p>Отсутствует.</p>
-                @endif
-            </div>
-        </div>
         <select class="form-select mb-3" aria-label="" name="team">
             <option value="0" selected disabled>Дать доступ команде</option>
-            {{-- @foreach ($collection as $item)
-                <option value="false" selected>Дать доступ команде</option>
-            @endforeach --}}
+            @foreach ($teams as $team)
+                <option value="{{ $team->id }}">{{ $team->name }}</option>
+            @endforeach
         </select>
-        {{-- <div class="form-floating mb-3">
-            <input type="password" name="password" class="form-control" id="password">
-            <label for="password">Пароль для подтверждения</label>
-        </div> --}}
 
         <!-- Модаль тегов -->
         <div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
@@ -82,17 +64,19 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        {{-- Генерация списка тегов --}}
-                        @foreach ($tags as $tag)
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="tag{{ $tag->id }}"
-                                    name="tag-{{ $tag->id }}"
-                                    {{ isset($selectedTags) ? $selectedTags[$tag->id] : null }}>
-                                <label class="form-check-label" for="tag{{ $tag->id }}">
-                                    {{ $tag->name }}
-                                </label>
-                            </div>
-                        @endforeach
+                        <div class="overflow-y-scroll mb-3" style="max-height: 30vh">
+                            {{-- Генерация списка тегов --}}
+                            @foreach ($tags as $tag)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="tag{{ $tag->id }}"
+                                        name="tag-{{ $tag->id }}"
+                                        {{ isset($selectedTags) ? $selectedTags[$tag->id] : null }}>
+                                    <label class="form-check-label" for="tag{{ $tag->id }}">
+                                        {{ $tag->name }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>

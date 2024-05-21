@@ -33,14 +33,12 @@
                         </div>
                     </a>
                     <div>
-                        <i class="text-secondary">
-                            ({{ $devteam->formatted_created_at }})
-                        </i>
+                            {!! $devteam->formatted_created_at !!}
                     </div>
                 </div>
                 <div class="mb-3">
                     <p>
-                        {!! mb_substr($devteam->text, 0, 600) !!}
+                        {!! mb_substr($devteam->description, 0, 600) !!}
                     </p>
                 </div>
             </div>

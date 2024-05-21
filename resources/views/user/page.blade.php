@@ -2,8 +2,7 @@
 
 @if ($user_exist)
     @php
-        $string =
-            isset(auth()->user()->id) && auth()->user()->id === $user->id ? 'Личный кабинет' : $user->login;
+        $string = isset(auth()->user()->id) && auth()->user()->id === $user->id ? 'Личный кабинет' : $user->login;
         $canedit = isset(auth()->user()->id) && auth()->user()->id === $user->id ? true : false;
 
         switch ($user->role_id) {
@@ -34,8 +33,7 @@
 
 @if ($user_exist)
     @section('body')
-        <div
-            class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $user->banned ? 'alert alert-danger' : null }}">
+        <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $user->banned ? 'alert alert-danger' : null }}">
             @if ($user->avatar)
                 <div class="avatar avatar-big">
                     <img src="{{ asset('storage/imgs/users/avatars/' . $user->avatar) }}" alt="">
@@ -62,6 +60,8 @@
                         @endphp
                         <a href="{{ route('subscribe', ['type' => 'developer', 'id' => $user->id]) }}"
                             class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
+                            <a href="{{ route('home', ['author_id' => $user->id]) }}"
+                                class="btn btn-primary">Проекты этого разработчика</a>
                     @endif
                     @if ($canedit)
                         @if (auth()->user()->role_id === 2 && !auth()->user()->banned)
@@ -151,6 +151,97 @@
             <p>
                 {!! $user->about !!}
             </p>
-        </div>
-    @endsection
+
+            <div class="row">
+                @if (!empty($teams->all()))
+                    <div class="col">
+                        <b>
+                            Участник команд:
+                        </b>
+                        <div class="overflow-y-scroll" style="max-width: 50vh">
+                            @foreach ($teams as $team)
+                                <div class="d-flex flex-wrap align-items-center">
+                                    @if ($team->avatar)
+                                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                                            <img src="{{ asset('storage/imgs/teams/avatars/' . $team->avatar) }}"
+                                                alt="">
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <a href="{{ route('devteam', ['url' => $team->url]) }}">
+                                            <b>
+                                                {{ $team->name }}
+                                            </b>
+                                        </a>
+                                        <br>
+                                        <i class="text-secondary">
+                                            {{ $team->role }}
+                                        </i>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                @if (!empty($projects->all()))
+                    <div class="col">
+                        <b>
+                            Проекты:
+                        </b>
+                        <div class="overflow-y-scroll" style="max-width: 50vh">
+                            @foreach ($projects as $project)
+                                <div class="mb-3 p-2 rounded border shadow">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-1">
+                                        <a href="{{ route('project', ['url' => $project->url]) }}"
+                                            class="d-flex flex-wrap align-items-baseline text-decoration-none">
+                                            <h3>{{ $project->name }}</h3>
+                                        </a>
+                                    </div>
+                                    <a href="{{ route('userpage', ['login' => $project->author]) }}"
+                                        class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
+                                        <div class="avatar avatar-small" style="margin-right: 10px">
+                                            <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"
+                                                alt="">
+                                        </div>
+                                        <p class="mb-0">
+                                            <i>
+                                                {{ $project->author }}
+                                            </i>
+                                        </p>
+                                    </a>
+                                    <i class="text-secondary">
+                                        <b>
+                                            Теги:
+                                        </b>
+                                        {{ $project->tags }}
+                                    </i>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                @if (!empty($posts->all()))
+                    <div class="col">
+                        <b>
+                            Последние новости:
+                        </b>
+                        <div class="overflow-y-scroll" style="max-width: 50vh">
+                            @foreach ($posts as $post)
+                                <a href="{{ route('post', ['id' => $post->id]) }}"
+                                    class="text-decoration-none text-dark">
+                                    <div class="p-2 mb-3 rounded border">
+                                        <div class="mb-2">
+                                            {!! mb_strlen($post->text) <= 200 ? $post->text : mb_substr($post->text, 0, 200) . '...' !!}
+                                        </div>
+                                        <small>
+                                            {!! $post->formatted_created_at !!}
+                                        </small>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endsection
 @endif

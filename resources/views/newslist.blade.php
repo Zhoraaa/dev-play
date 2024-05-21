@@ -51,7 +51,7 @@
     @if (isset($news))
         @foreach ($news as $post)
             <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
-                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
                     @if ($post->author_mask)
                         <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
                             class="d-flex flex-wrap align-items-center text-decoration-none">
@@ -107,11 +107,9 @@
                         </a>
                     @endif
                     <div>
-                        <i class="text-secondary">
-                            ({{ $post->formatted_created_at }})
-                        </i>
+                        {!! $post->formatted_created_at !!}
                         @auth
-                            @if ($post->author_id === auth()->user()->id)
+                            @if ($post->author_id === auth()->user()->id || auth()->user()->role >= 3)
                                 <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
                                     Удалить пост
                                 </a>

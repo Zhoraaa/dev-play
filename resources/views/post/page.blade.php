@@ -1,27 +1,50 @@
 @extends('layout')
 
+@php
+    $author = $post->showing_author ? 'команды "' . $post->showing_author . '"' : $post->author;
+@endphp
+
 @section('title')
-    Статья от {{ $post->author }}
+    Статья от {{ $author }}
 @endsection
 
 @section('body')
     {{-- Основная статья --}}
     <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <a href="{{ route('userpage', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
-                @if ($post->avatar)
-                    <div class="avatar avatar-medium" style="margin-right: 10px">
-                        <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
+            @if ($post->show_true_author === 1)
+                {{-- Разработчик как автор --}}
+                <a href="{{ route('userpage', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
+                    @if ($post->avatar)
+                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                            <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
+                        </div>
+                    @endif
+                    <div>
+                        <h5>
+                            {{ $post->author }}
+                        </h5>
                     </div>
-                @endif
-                <div>
-                    <h5>
-                        {{ $post->author }}
-                    </h5>
-                </div>
-            </a>
+                </a>
+            @else
+                {{-- Команда как автор --}}
+                <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
+                    class="d-flex flex-wrap align-items-center">
+                    @if ($post->showing_author_avatar)
+                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                            <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
+                                alt="">
+                        </div>
+                    @endif
+                    <div>
+                        <h5>
+                            {{ $post->showing_author }}
+                        </h5>
+                    </div>
+                </a>
+            @endif
             <div>
-                {!! $post->created_at_formatted !!}
+                {!! $post->formatted_created_at !!}
                 @if ($canedit)
                     <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
                         Удалить пост
@@ -41,7 +64,8 @@
         </button>
 
         {{-- Модаль с медиа --}}
-        <div class="modal modal-xl fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal modal-xl fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -110,7 +134,7 @@
                             <div class="modal-body">
                                 <div class="form-floating mb-3">
                                     <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! $project->description ?? null !!}</textarea>
-                                    <label for="text">Давным-давно...</label>
+                                    <label for="text">Ваша честная реакция:</label>
                                     <div class="editor-buttons mt-3">
                                         <button type="button" id="boldBtn"
                                             class="btn btn-outline-secondary"><b>Жирный</b></button>
@@ -137,9 +161,11 @@
                     <div class="mb-3 d-flex flex-wrap justify-content-between align-items-center">
                         <a href="{{ route('userpage', ['login' => $comm->author]) }}"
                             class="d-flex flex-wrap align-items-center">
-                            <div class="avatar avatar-small" style="margin-right: 10px">
-                                <img src="{{ asset('storage/imgs/users/avatars/' . $comm->avatar) }}" alt="">
-                            </div>
+                            @if ($comm->avatar)
+                                <div class="avatar avatar-small" style="margin-right: 10px">
+                                    <img src="{{ asset('storage/imgs/users/avatars/' . $comm->avatar) }}" alt="">
+                                </div>
+                            @endif
                             <div>
                                 <h6 class="link-secondary">
                                     {{ $comm->author }}
@@ -147,9 +173,9 @@
                             </div>
                         </a>
                         <div>
-                            {!! $comm->created_at_formatted !!}
+                            {!! $comm->formatted_created_at !!}
                             @auth
-                                @if ($comm->author_id === auth()->user()->id)
+                                @if ($comm->author_id === auth()->user()->id || auth()->user()->role >= 3)
                                     <a href="{{ route('commDel', ['id' => $comm->id]) }}" class="btn btn-outline-danger">
                                         Удалить комментарий
                                     </a>

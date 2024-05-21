@@ -41,8 +41,8 @@ class SnapshotsController extends Controller
         $updatedAtDiff = $updatedAt->diffForHumans();
 
         // Формируем окончательные строки для отображения
-        $snapshot->created_at_formatted = "$createdAtDiff (<i class='text-secondary'>$createdAtFormatted</i>)";
-        $snapshot->updated_at_formatted = "$updatedAtDiff (<i class='text-secondary'>$updatedAtFormatted</i>)";
+        $snapshot->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+        $snapshot->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
 
         if (!$snapshot) {
             return redirect()->back()->with('error', 'Версия не найдена');
@@ -73,8 +73,8 @@ class SnapshotsController extends Controller
         ], [
             'name.required' => 'Поле "Название" обязательно для заполнения.',
             'name.max' => 'Поле "Название" должно содержать не более 255 символов.',
-            'name.regex' => 'Для названия снапшота используйте только латиницу или спецсимолы.',
-            'name.unique' => 'Название снапшота должно быть уникальным.',
+            'name.regex' => 'Для названия версии используйте только латиницу или спецсимолы.',
+            'name.unique' => 'Название версии должно быть уникальным.',
 
             'description.required' => 'Поле "Описание" обязательно для заполнения.',
 
@@ -90,10 +90,10 @@ class SnapshotsController extends Controller
 
         if (isset($request->id)) {
             $build = $this->update($request, $url);
-            $response = 'Снапшот успешно загружен!';
+            $response = 'Версия успешно загружена!';
         } else {
             $build = $this->create($request, $url);
-            $response = 'Данные снапшота обновлены.';
+            $response = 'Данные версии обновлены.';
         }
 
         if ($build === false) {
@@ -125,21 +125,16 @@ class SnapshotsController extends Controller
             'name' => $data['name'],
             'description' => $data['description'],
         ]);
-        // Сохраняем медиафайлы
+
         if (isset($data['images'])) {
-            foreach ($data['images'] as $image) {
-                $fileName = time() . '_' . $image->getClientOriginalName();
-                $filePath = 'storage/projects/media/' . $fileName;
+            foreach ($data['images'] as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $filePath = 'storage/imgs/projects/' . $fileName;
 
-                // Сжимаем изображение с помощью Intervention Image (если это изображение)
-                if ($image->getClientOriginalExtension() == 'jpeg' || $image->getClientOriginalExtension() == 'png') {
-                    $compressedImage = Image::make($image)->encode('jpg', 80); // Преобразуем в JPEG с качеством 80%
-                    Storage::put($filePath, $compressedImage->stream());
-                } else {
-                    Storage::putFileAs('storage/projects/media', $image, $fileName);
-                }
+                // Сохраняем файл для скачивания
+                Storage::putFileAs('storage/imgs/projects/', $file, $fileName);
 
-                // Создаем запись о медиафайле
+                // Создаем запись о медиафайле для скачивания
                 $media = ProjectMedia::create([
                     'author_id' => Auth::user()->id,
                     'project_id' => $project->id,
@@ -147,7 +142,7 @@ class SnapshotsController extends Controller
                     'file_name' => $fileName,
                     'for_download' => false,
                 ]);
-                // Это изображение не предназначено для скачивания
+                // Этот файл не предназначен для скачивания
             }
         }
 
@@ -177,13 +172,13 @@ class SnapshotsController extends Controller
     }
     private function update(Request $newData, $url)
     {
-        // Получаем старые данные снапшота
+        // Получаем старые данные версии
         $oldSnapshot = Snapshots::where('snapshots.id', $newData->id)
             ->join('projects', 'projects.id', 'snapshots.project_id')
             ->select('snapshots.*', 'projects.author_id', 'projects.id as proj_id')
             ->first();
 
-        // Проверяем доступ к редактированию снапшота
+        // Проверяем доступ к редактированию версии
         if (Auth::user()->id == $oldSnapshot->author_id) {
             // Преобразуем текст описания по ключевым символам
             $newData['description'] = strip_tags($newData['description']);
@@ -201,7 +196,7 @@ class SnapshotsController extends Controller
                     $differences[$key] = $value;
                 }
             }
-            // Обновляем данные снапшота
+            // Обновляем данные версии
             $oldSnapshot->update($differences);
 
             // Обработка медиафайлов (изображений и файлов для скачивания)
@@ -345,5 +340,34 @@ class SnapshotsController extends Controller
 
         // Возвращаем обработанный текст
         return $processedText;
+    }
+
+
+    // Обработка изображений
+    private function multiloadMedia($data, $proj_id, $field, $downloadable, $snapshot)
+    {
+        if ($data->hasFile($field)) {
+            $files = $data->file($field);
+            $fileNames = [];
+
+            foreach ($files as $file) {
+                // Генерация имени файла
+                $fileName = 'post_' . $proj_id . '_' . $file->getClientOriginalName();
+                $mediaPath = $file->storeAs('public/imgs/posts/media/', $fileName);
+
+                // Сохранение пути файла для дальнейшего использования
+                $fileNames[] = $fileName;
+
+                // Сохранение в базе данных
+                ProjectMedia::create([
+                    'project_id' => $proj_id,
+                    'author_id' => Auth::user()->id,
+                    'file_name' => $fileName,
+                    'snapshot_id' => $snapshot,
+                    'for_download' => $downloadable,
+                    'created_at' => false
+                ]);
+            }
+        }
     }
 }

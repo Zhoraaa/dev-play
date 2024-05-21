@@ -12,47 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class PageController extends Controller
 {
-    public function home()
-    {
-        $projects = Project::leftJoin('users', 'users.id', '=', 'projects.author_id')
-            ->leftJoin('dev_teams', 'dev_teams.id', '=', 'projects.team_rights_id')
-            ->leftJoin('tag_to_project_connections', 'projects.id', '=', 'tag_to_project_connections.project_id')
-            ->leftJoin('tags', 'tags.id', '=', 'tag_to_project_connections.tag_id')
-            ->select(
-                'projects.*',
-                'users.avatar',
-                'users.role_id',
-                'users.login as author',
-                'dev_teams.name as dev_team',
-                DB::raw('GROUP_CONCAT(DISTINCT tags.name ORDER BY tags.name SEPARATOR ", ") as tags')
-            )
-            ->groupBy('projects.id')
-            ->orderBy('updated_at', 'asc')
-            ->get(5);
-
-        $teams = DevTeam::orderBy('name', 'asc')->get();
-
-        $posts = Post::orderBy('created_at', 'desc')
-            ->where('type_id', '=', 1)
-            ->leftJoin('users', 'users.id', 'posts.author_id')
-            ->leftJoin('dev_teams', 'dev_teams.id', 'posts.author_mask')
-            ->select(
-                'posts.*',
-                'users.login as author',
-                'users.avatar',
-                'users.role_id',
-                'dev_teams.name as showing_author',
-                'dev_teams.url as showing_author_url',
-            )
-            ->get(5);
-
-        return view('home', [
-            'projects' => $projects,
-            'teams' => $teams,
-            'posts' => $posts,
-        ]);
-    }
-
     public function projects(Request $request)
     {
         // Заготавливаем запрос, достающий основную информацию по проектам
@@ -137,8 +96,19 @@ class PageController extends Controller
 
         // Форматируем текст
         foreach ($projects as $project) {
-            $project->formatted_created_at = $project->created_at->format('d.m.Y H:i');
-            $project->formatted_updated_at = $project->updated_at->format('d.m.Y H:i');
+            // Форматирование даты и времени создания (created_at)
+            $createdAt = Carbon::parse($project->created_at);
+            $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+            $createdAtDiff = $createdAt->diffForHumans();
+
+            // Форматирование даты и времени обновления (updated_at)
+            $updatedAt = Carbon::parse($project->updated_at);
+            $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+            $updatedAtDiff = $updatedAt->diffForHumans();
+
+            // Формируем окончательные строки для отображения
+            $project->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $project->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
         }
 
         $tags = Tag::orderBy('name', 'asc')->get();
@@ -170,8 +140,19 @@ class PageController extends Controller
             ->get();
 
         foreach ($news as $post) {
-            $post->formatted_created_at = $post->created_at->format('d.m.Y H:i');
-            $post->formatted_updated_at = $post->updated_at->format('d.m.Y H:i');
+            // Форматирование даты и времени создания (created_at)
+            $createdAt = Carbon::parse($post->created_at);
+            $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+            $createdAtDiff = $createdAt->diffForHumans();
+
+            // Форматирование даты и времени обновления (updated_at)
+            $updatedAt = Carbon::parse($post->updated_at);
+            $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+            $updatedAtDiff = $updatedAt->diffForHumans();
+
+            // Формируем окончательные строки для отображения
+            $post->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $post->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
         }
 
         // dd($news);

@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\DevTeam;
 use App\Models\DevToTeamConnection;
+use App\Models\Post;
+use App\Models\Project;
 use App\Models\Subscribes;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -32,8 +35,8 @@ class DevTeamController extends Controller
             $updatedAtDiff = $updatedAt->diffForHumans();
 
             // Формируем окончательные строки для отображения
-            $team->created_at_formatted = "$createdAtDiff (<i class='text-secondary'>$createdAtFormatted</i>)";
-            $team->updated_at_formatted = "$updatedAtDiff (<i class='text-secondary'>$updatedAtFormatted</i>)";
+            $team->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $team->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
         } else {
             return redirect()->back()->with('error', 'Команда не найдена');
         }
@@ -47,12 +50,10 @@ class DevTeamController extends Controller
         if (!$ismember) {
             $canedit = 0;
         } else {
-            switch (
-                DevToTeamConnection::where('team_id', '=', $team->id)
-                    ->where('developer_id', '=', Auth::user()->id)
-                    ->first()
-                    ->role
-            ) {
+            switch (DevToTeamConnection::where('team_id', '=', $team->id)
+                ->where('developer_id', '=', Auth::user()->id)
+                ->first()
+                ->role) {
                 default:
                     $canedit = 0;
                     break;
@@ -65,26 +66,82 @@ class DevTeamController extends Controller
             }
         }
 
+        // Список участников
         $members = DevToTeamConnection::where('team_id', '=', $team->id)
             ->join('users', 'users.id', 'dev_to_team_connections.developer_id')
             ->select('users.*', 'dev_to_team_connections.role')
             ->get();
 
-
+        // Проверка подписки
         $subscribed = false;
         if (Auth::user()) {
             $subscribed = Subscribes::where('sub_type', '=', 'dev_team')
                 ->where('sub_for', '=', $team->id)
                 ->where('subscriber_id', '=', Auth::user()->id)
                 ->count() ? true : false;
-
         }
+
+        // Список проектов
+        $projects = Project::leftJoin('users', 'users.id', '=', 'projects.author_id')
+            ->leftJoin('dev_teams', 'dev_teams.id', '=', 'projects.team_rights_id')
+            ->leftJoin('tag_to_project_connections', 'projects.id', '=', 'tag_to_project_connections.project_id')
+            ->leftJoin('tags', 'tags.id', '=', 'tag_to_project_connections.tag_id')
+            ->select(
+                'projects.*',
+                'users.avatar',
+                'users.role_id',
+                'users.login as author',
+                'dev_teams.url as author_team_url',
+                'dev_teams.name as author_team',
+                'dev_teams.avatar as author_team_avatar',
+                DB::raw('GROUP_CONCAT(DISTINCT tags.name ORDER BY tags.name SEPARATOR ", ") as tags')
+            )
+            ->where('projects.team_rights_id', '=', $team->id)
+            ->groupBy('projects.id')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $posts = Post::orderBy('created_at', 'desc')
+            ->where('type_id', '=', 1)
+            ->leftJoin('users', 'users.id', 'posts.author_id')
+            ->leftJoin('dev_teams', 'dev_teams.id', 'posts.author_mask')
+            ->select(
+                'posts.*',
+                'users.login as author',
+                'users.avatar',
+                'users.role_id',
+                'dev_teams.name as showing_author',
+                'dev_teams.url as showing_author_url',
+                'dev_teams.avatar as showing_author_avatar',
+            )
+            ->where('author_mask', '=', $team->id)
+            ->get();
+
+            
+        foreach ($posts as $post) {
+            // Форматирование даты и времени создания (created_at)
+            $createdAt = Carbon::parse($post->created_at);
+            $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+            $createdAtDiff = $createdAt->diffForHumans();
+
+            // Форматирование даты и времени обновления (updated_at)
+            $updatedAt = Carbon::parse($post->updated_at);
+            $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+            $updatedAtDiff = $updatedAt->diffForHumans();
+
+            // Формируем окончательные строки для отображения
+            $post->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $post->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+        }
+
 
         return view('devteam.page', [
             'url' => $url,
             'team' => $team,
             'canedit' => $canedit,
             'members' => $members,
+            'projects' => $projects,
+            'posts' => $posts,
             'subscribed' => $subscribed
         ]);
     }

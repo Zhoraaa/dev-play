@@ -6,7 +6,7 @@
     $taglist = '';
     foreach ($tags as $tag) {
         $taglist .=
-            '<a href=\'/projects?tag-' .
+            '<a href=\'/?tag-' .
             $tag->id .
             '=on\' class="link-primary link-primary-hover">' .
             $tag->name .
@@ -37,9 +37,7 @@
                     class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
             @endif
             @if ($canedit && auth()->user()->role_id === 2 && !auth()->user()->banned)
-                <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+
-                    Новый
-                    снапшот</a>
+                <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+ Новая версия</a>
                 <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
                     class="mr-1 mb-1 btn btn-warning">Редактировать
                     информацию</a>
@@ -90,7 +88,7 @@
                 Проект создан:
             </p>
             <span class="d-block">
-                {!! $project->created_at_formatted !!}
+                {!! $project->formatted_created_at !!}
             </span>
         </div>
         <div class="d-flex flex-wrap justify-content-between">
@@ -98,7 +96,7 @@
                 Последнее обновление:
             </p>
             <span class="d-block">
-                {!! $project->updated_at_formatted !!}
+                {!! $project->formatted_updated_at !!}
             </span>
         </div>
     </div>

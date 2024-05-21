@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Validator;
 
 class PostController extends Controller
@@ -27,6 +26,7 @@ class PostController extends Controller
                 'users.avatar',
                 'dev_teams.name as showing_author',
                 'dev_teams.url as showing_author_url',
+                'dev_teams.avatar as showing_author_avatar',
                 DB::raw('GROUP_CONCAT(post_media.file_name) as media_files')
             )
             ->groupBy('posts.id', 'users.login', 'users.avatar', 'dev_teams.name', 'dev_teams.url')
@@ -46,8 +46,8 @@ class PostController extends Controller
         $updatedAtDiff = $updatedAt->diffForHumans();
 
         // Формируем окончательные строки для отображения
-        $post->created_at_formatted = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
-        $post->updated_at_formatted = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+        $post->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+        $post->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
 
 
         $canedit = false;
@@ -79,8 +79,8 @@ class PostController extends Controller
             $updatedAtDiff = $updatedAt->diffForHumans();
 
             // Формируем окончательные строки для отображения
-            $comm->created_at_formatted = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
-            $comm->updated_at_formatted = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+            $comm->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $comm->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
         }
 
         return view('post.page', [

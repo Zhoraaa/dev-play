@@ -21,16 +21,13 @@
                 <div class="form-floating">
                     <input type="text" name="name" class="form-control" id="name"
                         value="{{ old('name') ?? ($builddata->name ?? null) }}">
-                    <label for="name">Название снапшота</label>
+                    <label for="name">Название версии</label>
                 </div>
             </div>
-            <button type="button" class="btn btn-success col mt-3" data-bs-toggle="modal" data-bs-target="#mediaModal">
-                Редактировать изображения
-            </button>
         </div>
         <div class="form-floating mb-3">
             <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? ($builddata->description ?? null) !!}</textarea>
-            <label for="description">Описание снапшота</label>
+            <label for="description">Описание версии</label>
             <div class="editor-buttons mt-3">
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
                 <button type="button" id="italicBtn" class="btn btn-outline-secondary"><i>Курсив</i></button>
@@ -39,30 +36,12 @@
         </div>
         <div class="row mb-3">
             <div class="col mb-3">
-                <label for="filesMultiple" class="form-label">Изображения</label>
-                <input class="form-control" type="file" id="filesMultiple" name="images" multiple>
+                <label for="media" class="form-label">Изображения</label>
+                <input class="form-control" type="file" id="media" name="images[]" multiple>
             </div>
             <div class="col mb-3">
-                <label for="filesMultiple" class="form-label">Загружаемые файлы</label>
-                <input class="form-control" type="file" id="filesMultiple" name="downloadable" multiple>
-            </div>
-        </div>
-
-        <!-- Модаль -->
-        <div class="modal fade" id="mediaModal" tabindex="-1" aria-labelledby="mediaModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="mediaModalLabel">Изображения снапшота</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        {{-- Генерация списка тегов --}}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    </div>
-                </div>
+                <label for="downloadable" class="form-label">Загружаемые файлы</label>
+                <input class="form-control" type="file" id="downloadable" name="downloadable[]" multiple>
             </div>
         </div>
 
