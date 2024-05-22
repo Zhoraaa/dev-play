@@ -58,56 +58,58 @@
             </p>
         </div>
 
-        {{-- Триггер модальки с медиа --}}
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-            Просмотреть изображения
-        </button>
+        @if ($post->media_files)
+            {{-- Триггер модальки с медиа --}}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Просмотреть изображения
+            </button>
 
-        {{-- Модаль с медиа --}}
-        <div class="modal modal-xl fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Медиафайлы</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body">
-                        {{-- Вывод медиа --}}
-                        @php
-                            $media_files = explode(',', $post->media_files);
-                        @endphp
-                        <div id="carouselExample" class="carousel slide">
-                            <div class="carousel-inner rounded border overflow-hidden">
-                                {{-- Генерация слайдера с картинками --}}
-                                @foreach ($media_files as $key => $media_file)
-                                    <div class="carousel-item {{ $key === 0 ? 'active' : null }}">
-                                        <div class="w-100 carousel-img-wrapper">
-                                            <img src="{{ asset('storage/imgs/posts/media/' . $media_file) }}"
-                                                class="d-block shadow" alt="...">
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
-                                data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Предыдущий</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
-                                data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Следующий</span>
-                            </button>
+            {{-- Модаль с медиа --}}
+            <div class="modal modal-xl fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Медиафайлы</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                         </div>
+                        <div class="modal-body">
+                            {{-- Вывод медиа --}}
+                            @php
+                                $media_files = explode(',', $post->media_files);
+                            @endphp
+                            <div id="carouselExample" class="carousel slide">
+                                <div class="carousel-inner rounded border overflow-hidden">
+                                    {{-- Генерация слайдера с картинками --}}
+                                    @foreach ($media_files as $key => $media_file)
+                                        <div class="carousel-item {{ $key === 0 ? 'active' : null }}">
+                                            <div class="w-100 carousel-img-wrapper">
+                                                <img src="{{ asset('storage/imgs/posts/media/' . $media_file) }}"
+                                                    class="d-block shadow" alt="...">
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
+                                    data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Предыдущий</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
+                                    data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Следующий</span>
+                                </button>
+                            </div>
 
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
 
     {{-- Блок с комментариями --}}

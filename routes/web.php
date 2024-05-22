@@ -119,4 +119,4 @@ Route::get('/admin/user/{id}', [AdminController::class, 'userEdit'])->middleware
 Route::get('/subscribe/{type}/{id}', [SubscribesController::class, 'subs'])->middleware('auth')->name('subscribe');
 
 // Загрузка файлов
-Route::get('/download/{$file}', [FileController::class, 'download'])->name('download');
+Route::get('/download/{file}', [FileController::class, 'download'])->name('download');

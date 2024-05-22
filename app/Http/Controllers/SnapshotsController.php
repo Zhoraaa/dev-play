@@ -48,19 +48,26 @@ class SnapshotsController extends Controller
             return redirect()->back()->with('error', 'Версия не найдена');
         }
 
-        // На всякий случай создадим предупреждение, если версия редактировалась.
-        $warning = false;
-        if ($createdAtFormatted !== $updatedAtFormatted) {
-            $warning = true;
-        }
+        $media = ProjectMedia::where('project_id', '=', $snapshot->project_id)
+            ->where('snapshot_id', '=', $snapshot->id)
+            ->where('for_download', '=', 0)
+            ->get();
+
+        $downloadable = ProjectMedia::where('project_id', '=', $snapshot->project_id)
+            ->where('snapshot_id', '=', $snapshot->id)
+            ->where('for_download', '=', 1)
+            ->get();
+
+
 
         $canedit = $snapshot->author_id == Auth::user()->id ? true : false;
 
         return view('snapshot.page', [
             'url' => $url,
-            'builddata' => $snapshot,
-            'canedit' => $canedit,
-            'warning' => $warning
+            'snapshot' => $snapshot,
+            'media' => $media,
+            'downloadable' => $downloadable,
+            'canedit' => $canedit
         ]);
     }
     public function save(Request $request, $url)
@@ -126,45 +133,8 @@ class SnapshotsController extends Controller
             'description' => $data['description'],
         ]);
 
-        if (isset($data['images'])) {
-            foreach ($data['images'] as $file) {
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = 'storage/imgs/projects/' . $fileName;
-
-                // Сохраняем файл для скачивания
-                Storage::putFileAs('storage/imgs/projects/', $file, $fileName);
-
-                // Создаем запись о медиафайле для скачивания
-                $media = ProjectMedia::create([
-                    'author_id' => Auth::user()->id,
-                    'project_id' => $project->id,
-                    'snapshot_id' => $snapshot->id,
-                    'file_name' => $fileName,
-                    'for_download' => false,
-                ]);
-                // Этот файл не предназначен для скачивания
-            }
-        }
-
-        if (isset($data['downloadable'])) {
-            foreach ($data['downloadable'] as $file) {
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = 'storage/projects/downloadable/' . $fileName;
-
-                // Сохраняем файл для скачивания
-                Storage::putFileAs('storage/projects/downloadable', $file, $fileName);
-
-                // Создаем запись о медиафайле для скачивания
-                $media = ProjectMedia::create([
-                    'author_id' => Auth::user()->id,
-                    'project_id' => $project->id,
-                    'snapshot_id' => $snapshot->id,
-                    'file_name' => $fileName,
-                    'for_download' => true,
-                ]);
-                // Этот файл предназначен для скачивания
-            }
-        }
+        $this->multiloadMedia($data, $project->id, 'snapshots/media/', 'images', 0, $snapshot->id);
+        $this->multiloadMedia($data, $project->id, 'snapshots/downloadable/', 'downloadable', 1, $snapshot->id);
 
         Project::where('url', $url)->update(['updated_at' => now()]);
 
@@ -199,52 +169,6 @@ class SnapshotsController extends Controller
             // Обновляем данные версии
             $oldSnapshot->update($differences);
 
-            // Обработка медиафайлов (изображений и файлов для скачивания)
-            if (isset($newData['images'])) {
-                foreach ($newData['images'] as $image) {
-                    $fileName = time() . '_' . $image->getClientOriginalName();
-                    $filePath = 'storage/projects/media/' . $fileName;
-
-                    // Сжимаем изображение с помощью Intervention Image (если это изображение)
-                    if ($image->getClientOriginalExtension() == 'jpeg' || $image->getClientOriginalExtension() == 'png') {
-                        $compressedImage = Image::make($image)->encode('jpg', 80); // Преобразуем в JPEG с качеством 80%
-                        Storage::put($filePath, $compressedImage->stream());
-                    } else {
-                        Storage::putFileAs('storage/projects/media', $image, $fileName);
-                    }
-
-                    // Создаем запись о медиафайле
-                    $media = ProjectMedia::create([
-                        'author_id' => Auth::user()->id,
-                        'project_id' => $oldSnapshot->proj_id,
-                        'snapshot_id' => $oldSnapshot->id,
-                        'file_name' => $fileName,
-                        'for_download' => false,
-                    ]);
-                    // Это изображение не предназначено для скачивания
-                }
-            }
-
-            if (isset($newData['downloadable'])) {
-                foreach ($newData['downloadable'] as $file) {
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $filePath = 'storage/projects/downloadable/' . $fileName;
-
-                    // Сохраняем файл для скачивания
-                    Storage::putFileAs('storage/projects/downloadable', $file, $fileName);
-
-                    // Создаем запись о медиафайле для скачивания
-                    $media = ProjectMedia::create([
-                        'author_id' => Auth::user()->id,
-                        'project_id' => $oldSnapshot->proj_id,
-                        'snapshot_id' => $oldSnapshot->id,
-                        'file_name' => $fileName,
-                        'for_download' => true,
-                    ]);
-                    // Этот файл предназначен для скачивания
-                }
-            }
-
             Project::where('url', $url)->update(['updated_at' => now()]);
 
             return $newData->name;
@@ -264,7 +188,7 @@ class SnapshotsController extends Controller
 
         return view('snapshot.editor', [
             'url' => $url,
-            'builddata' => $snapshot
+            'snapshot' => $snapshot
         ]);
     }
     public function destroy(Request $request, $url, $build)
@@ -344,16 +268,18 @@ class SnapshotsController extends Controller
 
 
     // Обработка изображений
-    private function multiloadMedia($data, $proj_id, $field, $downloadable, $snapshot)
+    private function multiloadMedia($data, $proj_id, $path, $field, $downloadable, $snapshot)
     {
         if ($data->hasFile($field)) {
             $files = $data->file($field);
             $fileNames = [];
 
+            $counter = 1;
+
             foreach ($files as $file) {
                 // Генерация имени файла
-                $fileName = 'post_' . $proj_id . '_' . $file->getClientOriginalName();
-                $mediaPath = $file->storeAs('public/imgs/posts/media/', $fileName);
+                $fileName = 'proj_' . $proj_id . '_file_' . $counter . '_' . $file->getClientOriginalName();
+                $mediaPath = $file->storeAs('public/' . $path . $fileName);
 
                 // Сохранение пути файла для дальнейшего использования
                 $fileNames[] = $fileName;
@@ -365,8 +291,10 @@ class SnapshotsController extends Controller
                     'file_name' => $fileName,
                     'snapshot_id' => $snapshot,
                     'for_download' => $downloadable,
-                    'created_at' => false
+                    'created_at' => now()
                 ]);
+
+                $counter++;
             }
         }
     }

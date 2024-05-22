@@ -13,20 +13,20 @@
     <form action="{{ route('snapshotSaveChanges', ['url' => $url]) }}" method="POST" enctype="multipart/form-data"
         class="m-auto mt-3 w-75">
         @csrf
-        @if (isset($builddata))
-            <input type="hidden" value="{{ $builddata->id ?? null }}" name="id">
+        @if (isset($snapshot))
+            <input type="hidden" value="{{ $snapshot->id ?? null }}" name="id">
         @endif
         <div class="row mb-3">
             <div class="col mt-3">
                 <div class="form-floating">
                     <input type="text" name="name" class="form-control" id="name"
-                        value="{{ old('name') ?? ($builddata->name ?? null) }}">
+                        value="{{ old('name') ?? ($snapshot->name ?? null) }}">
                     <label for="name">Название версии</label>
                 </div>
             </div>
         </div>
         <div class="form-floating mb-3">
-            <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? ($builddata->description ?? null) !!}</textarea>
+            <textarea name="description" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? ($snapshot->description ?? null) !!}</textarea>
             <label for="description">Описание версии</label>
             <div class="editor-buttons mt-3">
                 <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>

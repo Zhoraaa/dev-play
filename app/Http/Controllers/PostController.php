@@ -237,10 +237,12 @@ class PostController extends Controller
             $files = $data->file('media');
             $fileNames = [];
 
+            $counter = 1;
+
             foreach ($files as $file) {
                 // Генерация имени файла
-                $fileName = 'post_' . $post_id . '_' . $file->getClientOriginalName();
-                $mediaPath = $file->storeAs('public/imgs/posts/media/', $fileName);
+                $fileName = 'post_' . $post_id . '_img_' . $counter . '_' . $file->getClientOriginalName();
+                $mediaPath = $file->storeAs('app/imgs/posts/media/', $fileName);
 
                 // Сохранение пути файла для дальнейшего использования
                 $fileNames[] = $fileName;
@@ -252,6 +254,7 @@ class PostController extends Controller
                     'file_name' => $fileName,
                     'created_at' => false
                 ]);
+                $counter++;
             }
         }
     }

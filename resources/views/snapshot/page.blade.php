@@ -1,37 +1,36 @@
 @extends('layout')
 
 @section('title')
-    {{ $builddata->name }}
+    {{ $snapshot->name }}
 @endsection
 
 @section('body')
     <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
         <h2>
-            {{ $builddata->name }}
+            {{ $snapshot->name }}
         </h2>
         @if ($canedit && auth()->user()->role_id === 2 && !auth()->user()->banned)
             <div>
-                <a href="{{ route('snapshotEditor', ['url' => $url, 'build' => $builddata->name]) }}"
+                <a href="{{ route('snapshotEditor', ['url' => $url, 'build' => $snapshot->name]) }}"
                     class="mr-1 mb-1 btn btn-warning">Редактировать
                     информацию</a>
                 <button class="mr-1 mb-1 btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
-                    снапшот</button>
+                    версию</button>
             </div>
             <!-- Модалька подтверждения -->
             <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel" aria-hidden="true">
                 <form class="modal-dialog"
-                    action="{{ route('snapshotDelete', ['url' => $url, 'build' => $builddata->name]) }}" method="POST">
+                    action="{{ route('snapshotDelete', ['url' => $url, 'build' => $snapshot->name]) }}" method="POST">
                     @csrf
                     <div class="modal-content">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите удалить
-                                аккаунт?</h1>
+                                эту версию?</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             Это действие нельзя будет отменить. Все упоминания о этой версии на сайте исчезнут,
-                            некоторая
-                            информация будет безвозвратно утрачена.
+                            некоторая информация будет безвозвратно утрачена.
                             <div class="form-floating mt-3">
                                 <input type="password" name="password" class="form-control" id="floatingPassword"
                                     placeholder="Password">
@@ -47,15 +46,15 @@
             </div>
         @endif
         <p class="mt-3 mb-3">
-            {!! $builddata->description !!}
+            {!! $snapshot->description !!}
         </p>
         <div class="d-flex flex-wrap justify-content-between">
             <p class="text-secondary d-block">
                 Основной проект:
             </p>
             <i class="text-secondary d-block">
-                <a href="{{ route('project', ['url' => $builddata->project_url]) }}">
-                    {!! $builddata->project_name !!}
+                <a href="{{ route('project', ['url' => $snapshot->project_url]) }}">
+                    {!! $snapshot->project_name !!}
                 </a>
             </i>
         </div>
@@ -64,17 +63,71 @@
                 Версия опубликована:
             </p>
             <span class="d-block">
-                {!! $builddata->formatted_created_at !!}
+                {!! $snapshot->formatted_created_at !!}
             </span>
         </div>
-        @if ($warning)
-            <div class="d-flex flex-wrap justify-content-between alert alert-warning">
-                <p class="text-secondary d-block">
-                    Осторожно! Версия была отредактирована:
-                </p>
-                <span class="d-block">
-                    {!! $builddata->formatted_updated_at !!}
-                </span>
+
+        @if ($media->all())
+            {{-- Триггер модальки с медиа --}}
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Просмотреть изображения
+            </button>
+
+            {{-- Модаль с медиа --}}
+            <div class="modal modal-xl fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Медиафайлы</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                        </div>
+                        <div class="modal-body">
+                            {{-- Вывод медиа --}}
+                            <div id="carouselExample" class="carousel slide">
+                                <div class="carousel-inner rounded border overflow-hidden">
+                                    {{-- Генерация слайдера с картинками --}}
+                                    @foreach ($media as $key => $media_file)
+                                        <div class="carousel-item {{ $key === 0 ? 'active' : null }}">
+                                            <div class="w-100 carousel-img-wrapper">
+                                                <img src="{{ asset('storage/snapshots/images/' . $media_file) }}"
+                                                    class="d-block shadow" alt="...">
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
+                                    data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Предыдущий</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
+                                    data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Следующий</span>
+                                </button>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+        @if ($downloadable->all())
+            <div>
+                <h5>
+                    Файлы для загрузки:
+                </h5>
+                @foreach ($downloadable as $downloadable_file)
+                    {{-- @dd('storage/snapshots/downloadable/' . $downloadable_file->file_name) --}}
+                    <a href="{{ route('download', ['file' => $downloadable_file->file_name]) }}" target="_blank"
+                        rel="noopener noreferrer">
+                        {{ explode('_', $downloadable_file->file_name)[4] }}
+                    </a>
+                @endforeach
             </div>
         @endif
     </div>
