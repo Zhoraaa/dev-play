@@ -29,6 +29,8 @@
                 </b>
                 {{ $tagStr }}
             </i>
+            <br>
+            <a href="{{ route('home') }}" class="mt-1 btn btn-secondary">Сбросить фильтры</a>
         </div>
     @endif
 
@@ -45,14 +47,18 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        {{-- Поиск тегов --}}
+                        <div class="form-group mb-3">
+                            <input type="text" id="search" class="form-control" placeholder="Поиск по тегам...">
+                        </div>
                         <div class="overflow-y-scroll mb-3" style="max-height: 30vh">
                             {{-- Генерация списка тегов --}}
                             @foreach ($tags as $tag)
-                                <div class="form-check">
+                                <div class="form-check searchable">
                                     <input class="form-check-input" type="checkbox" id="tag{{ $tag->id }}"
                                         name="tag-{{ $tag->id }}"
                                         {{ isset($selectedTags) && in_array($tag->id, $selectedTags) ? 'checked' : null }}>
-                                    <label class="form-check-label" for="tag{{ $tag->id }}">
+                                    <label class="form-check-label criteria" for="tag{{ $tag->id }}">
                                         {{ $tag->name }}
                                     </label>
                                 </div>
@@ -77,61 +83,73 @@
 
     {{-- Список проектов --}}
     @if (isset($projects))
-        @foreach ($projects as $project)
-            <div class="w-75 m-auto mb-3 p-2 shadow rounded border border-dark">
-                <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-1">
-                    <a href="{{ route('project', ['url' => $project->url]) }}"
-                        class="d-flex flex-wrap align-items-baseline text-decoration-none">
-                        <h3>{{ $project->name }}</h3>
-                    </a>
-                    <div>
-                        <div>
-                            {!! $project->formatted_created_at !!}
+        <div class="w-75 m-auto d-flex flex-wrap justify-content-evenly">
+            @foreach ($projects as $project)
+                <div class="card" style="width: 18rem; margin: 5px;">
+                    @if ($project->cover)
+                        <img src="{{ asset('storage/projects/covers/' . $project->cover) }}" class="card-img-top"
+                            alt="{{ $project->cover }}">
+                    @endif
+                    <div class="card-body mt-2">
+                        <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-1">
+                            <a href="{{ route('project', ['url' => $project->url]) }}"
+                                class="d-flex flex-wrap align-items-baseline text-decoration-none">
+                                <h3>{{ $project->name }}</h3>
+                            </a>
+                            <div>
+                                <div>
+                                    Последнее обновление:
+                                </div>
+                                <div>
+                                    {!! $project->formatted_updated_at !!}
+                                </div>
+                            </div>
+                        </div>
+                        @if ($project->author_team_url)
+                            <a href="{{ route('devteam', ['url' => $project->author_team_url]) }}"
+                                class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
+                                @if ($project->author_team_avatar)
+                                    <div class="avatar avatar-small" style="margin-right: 10px">
+                                        <img src="{{ asset('storage/imgs/teams/avatars/' . $project->author_team_avatar) }}"
+                                            alt="">
+                                    </div>
+                                @endif
+                                <p class="mb-0">
+                                    <i>
+                                        {{ $project->author_team }} (Команда разработчиков)
+                                    </i>
+                                </p>
+                            </a>
+                        @else
+                            <a href="{{ route('user', ['login' => $project->author]) }}"
+                                class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
+                                @if ($project->avatar)
+                                    <div class="avatar avatar-small" style="margin-right: 10px">
+                                        <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"
+                                            alt="">
+                                    </div>
+                                @endif
+                                <p class="mb-0">
+                                    <i>
+                                        {{ $project->author }} (Разработчик)
+                                    </i>
+                                </p>
+                            </a>
+                        @endif
+                        <i class="text-secondary">
+                            <b>
+                                Теги:
+                            </b>
+                            {{ $project->tags }}
+                        </i>
+                        <div class="mb-2">
+                            <p>
+                                {!! mb_substr($project->description, 0, 600) !!}
+                            </p>
                         </div>
                     </div>
                 </div>
-                @if ($project->author_team_url)
-                    <a href="{{ route('devteam', ['url' => $project->author_team_url]) }}"
-                        class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
-                        @if ($project->author_team_avatar)
-                            <div class="avatar avatar-small" style="margin-right: 10px">
-                                <img src="{{ asset('storage/imgs/teams/avatars/' . $project->author_team_avatar) }}"
-                                    alt="">
-                            </div>
-                        @endif
-                        <p class="mb-0">
-                            <i>
-                                {{ $project->author_team }} (Команда разработчиков)
-                            </i>
-                        </p>
-                    </a>
-                @else
-                    <a href="{{ route('userpage', ['login' => $project->author]) }}"
-                        class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
-                        @if ($project->avatar)
-                            <div class="avatar avatar-small" style="margin-right: 10px">
-                                <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}" alt="">
-                            </div>
-                        @endif
-                        <p class="mb-0">
-                            <i>
-                                {{ $project->author }} (Разработчик)
-                            </i>
-                        </p>
-                    </a>
-                @endif
-                <i class="text-secondary">
-                    <b>
-                        Теги:
-                    </b>
-                    {{ $project->tags }}
-                </i>
-                <div class="mb-2">
-                    <p>
-                        {!! mb_substr($project->description, 0, 600) !!}
-                    </p>
-                </div>
-            </div>
-        @endforeach
+            @endforeach
+        </div>
     @endif
 @endsection

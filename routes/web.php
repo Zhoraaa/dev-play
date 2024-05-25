@@ -44,7 +44,7 @@ Route::post('/signUp', [UserController::class, 'create'])->middleware('guest')->
 Route::post('/login', [UserController::class, 'login'])->middleware('guest')->name('signIn');
 Route::get('/signOut', [UserController::class, 'logout'])->middleware('auth')->name('signOut');
 // Профиль пользователя и редактирование данных пользователя
-Route::get('/user/{login}', [UserController::class, 'index'])->name('userpage');
+Route::get('/user/{login}', [UserController::class, 'index'])->name('user');
 Route::post('/user/delete', [UserController::class, 'destroy'])->middleware('auth')->name('userdelete');
 Route::get('/user/{login}/edit', [UserController::class, 'editor'])->middleware('auth')->name('userEditor');
 Route::post('/user/save', [UserController::class, 'update'])->middleware('auth')->name('userSaveChanges');
@@ -54,7 +54,7 @@ Route::get('/user/{login}/del-avatar', [UserController::class, 'avatarDelete'])-
 // Становление разработчиком
 Route::get('/user/{login}/beDeveloper', [UserController::class, 'beDeveloper'])->middleware('auth')->name('beDeveloper');
 
-// Команды разработчиков
+// Команды разработчиков, круд
 Route::get('/new-devteam', function () {
     $devs = User::where('role_id', '=', 2)
         ->where('id', '!=', Auth::user()->id)
@@ -68,6 +68,10 @@ Route::get('/team/{url}/edit', [DevTeamController::class, 'editor'])->middleware
 Route::post('/team/{url}/delete', [DevTeamController::class, 'destroy'])->middleware('auth')->name('devteamDelete');
 Route::post('/team/{url}/new-avatar', [DevTeamController::class, 'avatarUpdate'])->middleware('auth')->name('teamAvatarUpdate');
 Route::get('/team/{url}/del-avatar', [DevTeamController::class, 'avatarDelete'])->middleware('auth')->name('teamAvatarDelete');
+// Добавление в команду разработчиков
+Route::post('/team-invite/{user}', [DevTeamController::class, 'invite'])->middleware('auth')->name('invite');
+Route::get('/team-invite-response/{team}/{user}/{response}', [DevTeamController::class, 'inviteResponse'])->middleware('auth')->name('response');
+Route::get('/team-exit/{team}/', [DevTeamController::class, 'exit'])->middleware('auth')->name('exit');
 
 // Проекты
 Route::get('/new-project', function () {
@@ -84,11 +88,15 @@ Route::get('/new-project', function () {
         'teams' => $teams
     ]);
 })->middleware('auth')->name('projectNew');
+// Круд проектов
 Route::get('/project/{url}', [ProjectController::class, 'index'])->name('project');
 Route::post('/project/save', [ProjectController::class, 'save'])->middleware('auth')->name('projectSaveChanges');
 Route::get('/project/{url}/edit', [ProjectController::class, 'editor'])->middleware('auth')->name('projectEditor');
 Route::post('/project/{url}/delete', [ProjectController::class, 'destroy'])->middleware('auth')->name('projectDelete');
-// Снапшоты
+// Обновление обложки проекта
+Route::post('/project/{url}/coverUpdate', [ProjectController::class, 'coverUpdate'])->middleware('auth')->name('coverUpdate');
+Route::get('/project/{url}/coverDelete', [ProjectController::class, 'coverDelete'])->middleware('auth')->name('coverDelete');
+// Версии
 Route::get('/project/{url}/new-snapshot', function ($url) {
     return view('snapshot.editor', ['url' => $url]);
 })->middleware('auth')->name('snapshotNew');

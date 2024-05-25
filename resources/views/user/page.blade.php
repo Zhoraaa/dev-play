@@ -50,6 +50,45 @@
                     @endif
                 </h2>
                 <div>
+                    @if ($teamsToInvite && !$canedit)
+                        {{-- Триггер модальки приглашения --}}
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteToTeam">
+                            Пригласить в команду
+                        </button>
+
+                        {{-- Модалька приглашения --}}
+                        <div class="modal fade" id="inviteToTeam" data-bs-keyboard="false" tabindex="-1"
+                            aria-labelledby="inviteToTeamLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <form action="{{ route('invite', ['user' => $user->id]) }}" method="post">
+                                    @csrf
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="inviteToTeamLabel">
+                                                Пригласить {{ $user->login }} в команду
+                                            </h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Закрыть"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <select name="team" class="form-select"
+                                                aria-label="Пример выбора по умолчанию">
+                                                <option disabled selected>Выберите команду</option>
+                                                @foreach ($teamsToInvite as $team)
+                                                    <option value="{{ $team->id }}">{{ $team->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Скрыть</button>
+                                            <button type="submit" class="btn btn-primary">Пригласить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
                     @if (auth()->user()->id != $user->id && $user->role_id === 2)
                         @php
                             $substyle = !$subscribed ? 'success' : 'secondary';
@@ -60,8 +99,8 @@
                         @endphp
                         <a href="{{ route('subscribe', ['type' => 'developer', 'id' => $user->id]) }}"
                             class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
-                            <a href="{{ route('home', ['author_id' => $user->id]) }}"
-                                class="btn btn-primary">Проекты этого разработчика</a>
+                        <a href="{{ route('home', ['author_id' => $user->id]) }}" class="btn btn-primary">Проекты этого
+                            разработчика</a>
                     @endif
                     @if ($canedit)
                         @if (auth()->user()->role_id === 2 && !auth()->user()->banned)
@@ -131,7 +170,8 @@
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Нет</button>
+                                        <button type="button" class="btn btn-success"
+                                            data-bs-dismiss="modal">Нет</button>
                                         <button type="submit" class="btn btn-danger">Да</button>
                                     </div>
                                 </div>
@@ -197,7 +237,7 @@
                                             <h3>{{ $project->name }}</h3>
                                         </a>
                                     </div>
-                                    <a href="{{ route('userpage', ['login' => $project->author]) }}"
+                                    <a href="{{ route('user', ['login' => $project->author]) }}"
                                         class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
                                         <div class="avatar avatar-small" style="margin-right: 10px">
                                             <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"

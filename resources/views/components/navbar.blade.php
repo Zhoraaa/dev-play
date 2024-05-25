@@ -21,7 +21,7 @@
         <hr>
         {{-- Ссылки пользователей --}}
         @auth
-            <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}"class="m-1 btn btn-outline-primary">Личный
+            <a href="{{ route('user', ['login' => auth()->user()->login]) }}"class="m-1 btn btn-outline-primary">Личный
                 кабинет</a>
             @if (auth()->user()->role_id == 1)
                 <button class="m-1 btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#beDeveloper">Стать

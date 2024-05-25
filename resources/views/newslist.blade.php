@@ -73,7 +73,7 @@
                             </div>
                         </a>
                     @else
-                        <a href="{{ route('userpage', ['login' => $post->author]) }}"
+                        <a href="{{ route('user', ['login' => $post->author]) }}"
                             class="d-flex flex-wrap align-items-center text-decoration-none">
                             @if ($post->avatar)
                                 <div class="avatar avatar-medium" style="margin-right: 10px">

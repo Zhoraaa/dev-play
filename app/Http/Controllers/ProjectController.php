@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CustomEmail;
 use App\Models\DevTeam;
 use App\Models\DevToTeamConnection;
 use App\Models\Project;
@@ -9,10 +10,13 @@ use App\Models\Subscribes;
 use App\Models\Tag;
 use App\Models\Snapshots;
 use App\Models\TagToProjectConnection;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Validator;
 
@@ -61,6 +65,35 @@ class ProjectController extends Controller
             // dd($subscribed);
         }
 
+        // Команда-разработчик
+        $team = DevTeam::where('id', '=', $project->team_rights_id)->first();
+
+        // Разграничение доступа
+        if ($project->author_id === Auth::user()->id) {
+            // Если ты автор проекта
+            $canedit = 2;
+        } elseif ($team->all()) {
+            // Если ты участник команды проекта
+            $role = DevToTeamConnection::where('team_id', '=', $project->team_rights_id)
+                ->where('developer_id', '=', Auth::user()->id)
+                ->first()
+                ->role;
+
+            switch ($role) {
+                default:
+                    $canedit = 0;
+                    break;
+
+                case 'Разработчик':
+                    $canedit = 1;
+                    break;
+
+                case 'Глава':
+                    $canedit = 2;
+                    break;
+            }
+        }
+        $canedit = Auth::user()->banned ? 0 : $canedit;
 
         return view('project.page', [
             'url' => $url,
@@ -68,6 +101,8 @@ class ProjectController extends Controller
             'tags' => $tags,
             'snapshots' => $snapshots,
             'subscribed' => $subscribed,
+            'team' => $team,
+            'canedit' => $canedit,
         ]);
     }
 
@@ -132,10 +167,11 @@ class ProjectController extends Controller
                 $selectedTags[$tag->id] = in_array($tag->id, $selectedTagIds) ? 'checked' : null;
             }
 
-            $teams = DevToTeamConnection::where('dev_to_team_connections.develper_id', '=', Auth::user()->id)
+            $teams = DevToTeamConnection::where('dev_to_team_connections.developer_id', '=', Auth::user()->id)
                 ->where('role', '!=', 'Приглашён')
                 ->join('dev_teams', 'dev_teams.id', 'dev_to_team_connections.team_id')
                 ->select(
+                    'dev_to_team_connections.developer_id',
                     'dev_teams.*'
                 )
                 ->get();
@@ -158,13 +194,13 @@ class ProjectController extends Controller
         $data->description = str_replace("\r\n", "<br>", $data->description);
         $data->description = $this->handleLinks($data->description);
 
-        $proj = Project::create([
+        $project = Project::create([
             'name' => $data->name,
             'description' => $data->description,
-            'cover' => $data->cover,
+            'cover' => null,
             'url' => $data->url,
             'author_id' => Auth::user()->id,
-            'team_rights_id' => $data->team,
+            'team_rights_id' => $data->team === 'Дать доступ команде' ? null : $data->team,
             'updated_at' => now()
         ]);
 
@@ -179,10 +215,58 @@ class ProjectController extends Controller
 
         foreach ($tags as $tag_id) {
             TagToProjectConnection::create([
-                'project_id' => $proj->id,
+                'project_id' => $project->id,
                 'tag_id' => $tag_id
             ]);
         }
+
+        // Рассылка подписчикам разработчика
+        $subs = Subscribes::where('sub_for', '=', $project->author_id)
+            ->where('sub_type', '=', 'developer')
+            ->join('users', 'users.id', 'subscribes.subscriber_id')
+            ->select(
+                'users.email',
+            )
+            ->get();
+
+        $author = User::where('id', '=', $project->author_id)->first()->login;
+
+        if (!empty($subs->all())) {
+            foreach ($subs as $sub) {
+                Mail::to($sub->email)->send(
+                    new CustomEmail(
+                        'Новый проект от ' . $author . ' под названием "' . $project->name . '"',
+                        'Подробнее можете ознакмиться по <a href="' . route('project', ['url' => $project->url]) . '">ссылке</a>.'
+                    )
+                );
+            }
+        }
+
+
+        // Рассылка подписчикам команды
+        if ($project->team_rights_id != NULL) {
+            $subs = Subscribes::where('sub_for', '=', $project->team_rights_id)
+                ->where('sub_type', '=', 'dev_team')
+                ->join('users', 'users.id', 'subscribes.subscriber_id')
+                ->join('dev_teams', 'dev_teams.id', 'subscribes.sub_for')
+                ->select(
+                    'users.email',
+                    'dev_teams.name as team'
+                )
+                ->get();
+
+            if (!empty($subs->all())) {
+                foreach ($subs as $sub) {
+                    Mail::to($sub->email)->send(
+                        new CustomEmail(
+                            'Новый проект от ' . $sub->team . ' под названием "' . $project->name . '"',
+                            'Подробнее можете ознакмиться по <a href="' . route('project', ['url' => $project->url]) . '">ссылке</a>.'
+                        )
+                    );
+                }
+            }
+        }
+        unset($subs);
     }
     private function update(Request $newData)
     {
@@ -273,11 +357,67 @@ class ProjectController extends Controller
             TagToProjectConnection::where('project_id', '=', $project->id)->delete();
             Project::where('url', $url)->delete();
 
-            return redirect()->route('userpage', ['login' => Auth::user()->login])->with('success', 'Спасибо, что размещали свой проект у нас!');
+            return redirect()->route('user', ['login' => Auth::user()->login])->with('success', 'Спасибо, что размещали свой проект у нас!');
         } else {
             return redirect()->route('project', ['url' => $project->url])->with('error', 'Неверный пароль');
         }
     }
+
+
+    // Метод для обновления аватарки
+    public function coverUpdate(Request $request, $url)
+    {
+        $validator = Validator::make($request->all(), [
+            'cover' => 'nullable|file|mimes:jpeg,jpg,png,gif',
+        ]);
+
+        $project = Project::where('url', '=', $url)->first();
+
+        $image = $request->file('cover');
+
+        if ($request->hasFile('cover')) {
+            // Удаление предыдущей аватарки
+            if (Storage::exists('public/projects/covers/' . $project->cover)) {
+                Storage::delete('public/projects/covers/' . $project->cover);
+            }
+
+            // Генерация имени файла
+            $fileName = time() . '_cover_' . $project->login . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('public/projects/covers/', $fileName);
+
+            // Обновление записи в базе
+            Project::where('id', $project->id)
+                ->update([
+                    'cover' => $fileName
+                ]);
+
+            return redirect()->back()->with('success', 'Обложка обновлена.');
+        }
+
+        return redirect()->back()->with('error', 'Не удалось загрузить обложку.');
+    }
+
+    public function coverDelete($url)
+    {
+        $project = Project::where('url', '=', $url)->first();
+
+        // Удаление аватарки
+        if (Storage::exists('public/projects/covers/' . $project->cover)) {
+            Storage::delete('public/projects/covers/' . $project->cover);
+
+            // Очистка поля cover в базе данных
+            Project::where('id', $project->id)
+                ->update([
+                    'cover' => null
+                ]);
+
+            return redirect()->back()->with('success', 'Обложка удалена.');
+        } else {
+            return redirect()->back()->with('error', 'У вас нет обложки!');
+        }
+    }
+
+
 
 
     // Обработчики текста

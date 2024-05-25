@@ -164,6 +164,22 @@ class PageController extends Controller
     public function devTeams()
     {
         $teams = DevTeam::orderBy('name', 'asc')->get();
+        foreach ($teams as $team) {
+            // Форматирование даты и времени создания (created_at)
+            $createdAt = Carbon::parse($team->created_at);
+            $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+            $createdAtDiff = $createdAt->diffForHumans();
+
+            // Форматирование даты и времени обновления (updated_at)
+            $updatedAt = Carbon::parse($team->updated_at);
+            $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+            $updatedAtDiff = $updatedAt->diffForHumans();
+
+            // Формируем окончательные строки для отображения
+            $team->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $team->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+        }
+
 
         return view('devteams', [
             'devteams' => $teams,

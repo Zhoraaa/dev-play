@@ -1,3 +1,8 @@
+/* Сокрытие */
+.hidden {
+  display: none;
+}
+
 /* Аватарки */
 .avatar {
   border-radius: 100%;
@@ -46,4 +51,13 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* Обложки */
+.cover-wrapper {
+  overflow: hidden;
+  height: 250px;
+}
+.cover-wrapper > * {
+  height: 100%;
 }

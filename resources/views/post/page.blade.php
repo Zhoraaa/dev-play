@@ -14,7 +14,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
             @if ($post->show_true_author === 1)
                 {{-- Разработчик как автор --}}
-                <a href="{{ route('userpage', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
+                <a href="{{ route('user', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
                     @if ($post->avatar)
                         <div class="avatar avatar-medium" style="margin-right: 10px">
                             <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
@@ -161,7 +161,7 @@
                 <div class="w-100 mb-1 border"></div>
                 <div class="p-2 mb-2">
                     <div class="mb-3 d-flex flex-wrap justify-content-between align-items-center">
-                        <a href="{{ route('userpage', ['login' => $comm->author]) }}"
+                        <a href="{{ route('user', ['login' => $comm->author]) }}"
                             class="d-flex flex-wrap align-items-center">
                             @if ($comm->avatar)
                                 <div class="avatar avatar-small" style="margin-right: 10px">
