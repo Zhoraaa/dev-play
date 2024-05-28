@@ -14,7 +14,7 @@
             <div>
                 @if (auth()->user()->role_id == 2 && !auth()->user()->banned)
                     <a href="{{ route('projectNew') }}" class="btn btn-success mb-2">+ Новый проект</a>
-                    <a href="{{ route('home', ['author_id' => auth()->user()->id]) }}" class="btn btn-primary mb-2">Мои
+                    <a href="{{ route('home', ['developer' => auth()->user()->login]) }}" class="btn btn-primary mb-2">Мои
                         проекты</a>
                 @endif
             </div>
@@ -86,10 +86,13 @@
         <div class="w-75 m-auto d-flex flex-wrap justify-content-evenly">
             @foreach ($projects as $project)
                 <div class="card" style="width: 18rem; margin: 5px;">
-                    @if ($project->cover)
-                        <img src="{{ asset('storage/projects/covers/' . $project->cover) }}" class="card-img-top"
+                    @php
+                        $cover = $project->cover ?? 'default.png';
+                    @endphp
+                    <div style="height:175px" class="avatar">
+                        <img src="{{ asset('storage/projects/covers/' . $cover) }}" class="card-img-top"
                             alt="{{ $project->cover }}">
-                    @endif
+                    </div>
                     <div class="card-body mt-2">
                         <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-1">
                             <a href="{{ route('project', ['url' => $project->url]) }}"
@@ -109,7 +112,7 @@
                             <a href="{{ route('devteam', ['url' => $project->author_team_url]) }}"
                                 class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
                                 @if ($project->author_team_avatar)
-                                    <div class="avatar avatar-small" style="margin-right: 10px">
+                                    <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
                                         <img src="{{ asset('storage/imgs/teams/avatars/' . $project->author_team_avatar) }}"
                                             alt="">
                                     </div>
@@ -124,7 +127,7 @@
                             <a href="{{ route('user', ['login' => $project->author]) }}"
                                 class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
                                 @if ($project->avatar)
-                                    <div class="avatar avatar-small" style="margin-right: 10px">
+                                    <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
                                         <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"
                                             alt="">
                                     </div>

@@ -103,54 +103,77 @@
                     </form>
             @endif
         </div>
-    </div>
-    {{-- Информация о проекте --}}
-    <div class="mb-2 d-flex flex-wrap justify-content-between">
-        <h2>
-            {{ $project->name }}
-        </h2>
-        @if ($project->cover)
-            <div class="cover-wrapper rounded">
-                <img src="{{ asset('storage/projects/covers/' . $project->cover) }}" alt="">
+        {{-- Информация о проекте --}}
+        <div class="mb-2 d-flex flex-wrap justify-content-between">
+            <h2>
+                {{ $project->name }}
+            </h2>
+            @if ($project->cover)
+                <div class="cover-wrapper rounded">
+                    <img src="{{ asset('storage/projects/covers/' . $project->cover) }}" alt="">
+                </div>
+            @endif
+        </div>
+
+        <p class="mt-3 mb-3">
+            {!! $project->description !!}
+        </p>
+
+
+        <div class="d-flex flex-wrap justify-content-between">
+            <p class="text-secondary d-block">
+                Авторство:
+            </p>
+            @if ($project->author_mask)
+                <a href="{{ route('devteam', ['url' => $project->author_mask_url]) }}" class="d-block">
+                    {!! $project->author_mask !!}
+                </a>
+            @else
+                <a href="{{ route('user', ['login' => $project->author]) }}" class="d-block">
+                    {!! $project->author !!}
+                </a>
+            @endif
+        </div>
+        @if ($taglist != '.')
+            <div class="d-flex flex-wrap justify-content-between">
+                <p class="text-secondary d-block">
+                    Теги:
+                </p>
+                <i class="text-secondary d-block">
+                    {!! $taglist !!}
+                </i>
             </div>
         @endif
-    </div>
-
-    <p class="mt-3 mb-3">
-        {!! $project->description !!}
-    </p>
-    <div class="d-flex flex-wrap justify-content-between">
-        <p class="text-secondary d-block">
-            Теги:
-        </p>
-        <i class="text-secondary d-block">
-            {!! $taglist !!}
-        </i>
-    </div>
-    <div class="d-flex flex-wrap justify-content-between">
-        <p class="text-secondary d-block">
-            Проект создан:
-        </p>
-        <span class="d-block">
-            {!! $project->formatted_created_at !!}
-        </span>
-    </div>
-    <div class="d-flex flex-wrap justify-content-between">
-        <p class="text-secondary d-block">
-            Последнее обновление:
-        </p>
-        <span class="d-block">
-            {!! $project->formatted_updated_at !!}
-        </span>
+        <div class="d-flex flex-wrap justify-content-between">
+            <p class="text-secondary d-block">
+                Проект создан:
+            </p>
+            <span class="d-block">
+                {!! $project->formatted_created_at !!}
+            </span>
+        </div>
+        <div class="d-flex flex-wrap justify-content-between">
+            <p class="text-secondary d-block">
+                Последнее обновление:
+            </p>
+            <span class="d-block">
+                {!! $project->formatted_updated_at !!}
+            </span>
+        </div>
     </div>
     </div>
 
-    <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary">
+    <div class="m-auto mt-3 mb-3 p-3 w-75 rounded border border-secondary">
         <h5>
-            Версии по новизне
+            Версии проекта:
         </h5>
-        @foreach ($snapshots as $snapshot)
-            <a href="{{ route('snapshot', ['url' => $url, 'build' => $snapshot->name]) }}">{{ $snapshot->name }}</a><br>
-        @endforeach
+        @if ($snapshots->all())
+            @foreach ($snapshots as $snapshot)
+                <a
+                    href="{{ route('snapshot', ['url' => $url, 'build' => $snapshot->name]) }}">{{ $snapshot->name }}</a><br>
+            @endforeach
+        @else
+            <i>Нет опубликованых версий</i>
+        @endif
     </div>
 @endsection

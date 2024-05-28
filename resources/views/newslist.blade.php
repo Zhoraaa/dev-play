@@ -56,7 +56,7 @@
                         <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
                             class="d-flex flex-wrap align-items-center text-decoration-none">
                             @if ($post->showing_author_avatar)
-                                <div class="avatar avatar-medium" style="margin-right: 10px">
+                                <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
                                     <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
                                         alt="">
                                 </div>
@@ -76,7 +76,7 @@
                         <a href="{{ route('user', ['login' => $post->author]) }}"
                             class="d-flex flex-wrap align-items-center text-decoration-none">
                             @if ($post->avatar)
-                                <div class="avatar avatar-medium" style="margin-right: 10px">
+                                <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
                                     <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
                                 </div>
                             @endif

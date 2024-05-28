@@ -6,7 +6,7 @@
 @section('body')
     <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $team->banned ? 'alert alert-danger' : null }}">
         @if ($team->avatar)
-            <div class="avatar avatar-big">
+            <div class="avatar rounded-circle avatar-big">
                 <img src="{{ asset('storage/imgs/teams/avatars/' . $team->avatar) }}" alt="">
             </div>
         @endif
@@ -238,7 +238,7 @@
                         @foreach ($members as $member)
                             <div class="d-flex flex-wrap align-items-center border p-2 pt-1 mb-2 rounded shadow-sm">
                                 @if ($member->avatar)
-                                    <div class="avatar avatar-medium" style="margin-right: 10px">
+                                    <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
                                         <img src="{{ asset('storage/imgs/users/avatars/' . $member->avatar) }}"
                                             alt="">
                                     </div>
@@ -275,7 +275,7 @@
                                 </div>
                                 <a href="{{ route('user', ['login' => $project->author]) }}"
                                     class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
-                                    <div class="avatar avatar-small" style="margin-right: 10px">
+                                    <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
                                         <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"
                                             alt="">
                                     </div>

@@ -30,7 +30,7 @@
                     <a href="{{ route('devteam', ['url' => $devteam->url]) }}"
                         class="d-flex flex-wrap align-items-baseline">
                         @if (!empty($devteam->avatar))
-                            <div class="avatar avatar-small" style="margin-right: 10px">
+                            <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
                                 <img src="{{ asset('storage/imgs/teams/avatars/' . $devteam->avatar) }}" alt="">
                             </div>
                         @endif

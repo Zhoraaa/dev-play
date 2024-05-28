@@ -43,7 +43,7 @@ class PageController extends Controller
                 break;
             case 3:
                 $column = 'updated_at';
-                $queue = 'asc';
+                $queue = 'desc';
                 break;
             case 4:
                 $column = 'name';
@@ -184,5 +184,9 @@ class PageController extends Controller
         return view('devteams', [
             'devteams' => $teams,
         ]);
+    }
+
+    public function developers() {
+        
     }
 }

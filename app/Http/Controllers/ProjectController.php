@@ -26,7 +26,16 @@ class ProjectController extends Controller
 
     public function index($url)
     {
-        $project = Project::where('url', $url)->first();
+        $project = Project::where('projects.url', $url)
+            ->join('users', 'users.id', 'projects.author_id')
+            ->leftJoin('dev_teams', 'dev_teams.id', 'projects.team_rights_id')
+            ->select(
+                'projects.*',
+                'users.login as author',
+                'dev_teams.name as author_mask',
+                'dev_teams.url as author_mask_url',
+            )
+            ->first();
 
         if ($project) {
             // Форматирование даты и времени создания (created_at)
@@ -56,44 +65,48 @@ class ProjectController extends Controller
             return redirect()->back()->with('error', 'Проект не найден');
         }
 
+        // Команда-разработчик
+        $team = DevTeam::where('id', '=', $project->team_rights_id)->first();
+
         $subscribed = false;
+        $canedit = 0;
+
         if (Auth::user()) {
             $subscribed = Subscribes::where('sub_type', '=', 'project')
                 ->where('sub_for', '=', $project->id)
                 ->where('subscriber_id', '=', Auth::user()->id)
                 ->count() ? true : false;
             // dd($subscribed);
-        }
 
-        // Команда-разработчик
-        $team = DevTeam::where('id', '=', $project->team_rights_id)->first();
+            // Разграничение доступа
+            if ($project->author_id === Auth::user()->id) {
+                // Если ты автор проекта
+                $canedit = 2;
+            } elseif ($team) {
+                // Проверка участия в соответствующей команде
+                $check = DevToTeamConnection::where('team_id', '=', $project->team_rights_id)
+                    ->where('developer_id', '=', Auth::user()->id)
+                    ->first();
 
-        // Разграничение доступа
-        if ($project->author_id === Auth::user()->id) {
-            // Если ты автор проекта
-            $canedit = 2;
-        } elseif ($team->all()) {
-            // Если ты участник команды проекта
-            $role = DevToTeamConnection::where('team_id', '=', $project->team_rights_id)
-                ->where('developer_id', '=', Auth::user()->id)
-                ->first()
-                ->role;
+                // Если ты участник команды проекта
+                if ($check) {
+                    switch ($check->role) {
+                        default:
+                            $canedit = 0;
+                            break;
 
-            switch ($role) {
-                default:
-                    $canedit = 0;
-                    break;
+                        case 'Разработчик':
+                            $canedit = 1;
+                            break;
 
-                case 'Разработчик':
-                    $canedit = 1;
-                    break;
-
-                case 'Глава':
-                    $canedit = 2;
-                    break;
+                        case 'Глава':
+                            $canedit = 2;
+                            break;
+                    }
+                }
             }
+            $canedit = Auth::user()->banned ? 0 : $canedit;
         }
-        $canedit = Auth::user()->banned ? 0 : $canedit;
 
         return view('project.page', [
             'url' => $url,
