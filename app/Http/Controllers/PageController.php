@@ -6,6 +6,7 @@ use App\Models\DevTeam;
 use App\Models\Post;
 use App\Models\Project;
 use App\Models\Tag;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +44,7 @@ class PageController extends Controller
                 break;
             case 3:
                 $column = 'updated_at';
-                $queue = 'asc';
+                $queue = 'desc';
                 break;
             case 4:
                 $column = 'name';
@@ -122,7 +123,7 @@ class PageController extends Controller
         ]);
     }
 
-    public function news(Request $request)
+    public function news()
     {
         $news = Post::orderBy('created_at', 'desc')
             ->where('type_id', '=', 1)
@@ -157,16 +158,44 @@ class PageController extends Controller
 
         // dd($news);
         return view('newslist', [
-            'news' => $news
+            'news' => $news,
+            'buglist' => false,
         ]);
     }
 
     public function devTeams()
     {
         $teams = DevTeam::orderBy('name', 'asc')->get();
+        foreach ($teams as $team) {
+            // Форматирование даты и времени создания (created_at)
+            $createdAt = Carbon::parse($team->created_at);
+            $createdAtFormatted = $createdAt->format('d/m/Y H:i');
+            $createdAtDiff = $createdAt->diffForHumans();
+
+            // Форматирование даты и времени обновления (updated_at)
+            $updatedAt = Carbon::parse($team->updated_at);
+            $updatedAtFormatted = $updatedAt->format('d/m/Y H:i');
+            $updatedAtDiff = $updatedAt->diffForHumans();
+
+            // Формируем окончательные строки для отображения
+            $team->formatted_created_at = "$createdAtDiff <i class='text-secondary'>($createdAtFormatted)</i>";
+            $team->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
+        }
+
 
         return view('devteams', [
             'devteams' => $teams,
+        ]);
+    }
+
+    public function devs()
+    {
+        $devs = User::where('role_id', '=', 2)
+            ->orderBy('login')
+            ->get();
+
+        return view('devlist', [
+            'devs' => $devs,
         ]);
     }
 }

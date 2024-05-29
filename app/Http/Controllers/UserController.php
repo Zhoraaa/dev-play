@@ -81,13 +81,11 @@ class UserController extends Controller
                 ->where('author_id', '=', $user->id)
                 ->get(3);
 
-
-            // Список участников
+            // Список команд, в которых присутствует пользователь
             $teams = DevToTeamConnection::where('developer_id', '=', $user->id)
                 ->join('dev_teams', 'dev_teams.id', 'dev_to_team_connections.team_id')
                 ->select('dev_teams.*', 'dev_to_team_connections.role')
                 ->get();
-
 
             foreach ($posts as $post) {
                 // Форматирование даты и времени создания (created_at)
@@ -105,13 +103,27 @@ class UserController extends Controller
                 $post->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
             }
 
+            // Если разраб, можно пригласить в свою команду.
+            $teamsToInvite = false;
+            if (Auth::user()->role_id === 2 && $user->role_id === 2) {
+                $teamsToInvite = DevToTeamConnection::where('developer_id', '=', Auth::user()->id)
+                    ->where('role', 'Глава')
+                    ->join('dev_teams', 'dev_teams.id', 'dev_to_team_connections.team_id')
+                    ->select(
+                        'dev_teams.id',
+                        'dev_teams.name'
+                    )
+                    ->get();
+            }
+
             return view('user.page', [
                 'user_exist' => true,
                 'user' => $user,
                 'subscribed' => $subscribed,
                 'teams' => $teams,
                 'posts' => $posts,
-                'projects' => $projects
+                'projects' => $projects,
+                'teamsToInvite' => $teamsToInvite,
             ]);
         }
 
@@ -157,7 +169,7 @@ class UserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('userpage', ['login' => $user->login])->with('success', 'Приветствуем, ' . $user->login . '!');
+        return redirect()->route('user', ['login' => $user->login])->with('success', 'Приветствуем, ' . $user->login . '!');
     }
     public function login(Request $logindata)
     {
@@ -179,7 +191,7 @@ class UserController extends Controller
         }
 
         if (Auth::attempt($logindata->only('login', 'password'))) {
-            return redirect()->route('userpage', ['login' => $logindata->login])->with('success', 'Добро пожаловать, ' . $logindata->login . '!');
+            return redirect()->route('user', ['login' => $logindata->login])->with('success', 'Добро пожаловать, ' . $logindata->login . '!');
         }
 
         return redirect()->back()->with('error', 'Ошибка авторизации.');
@@ -292,7 +304,6 @@ class UserController extends Controller
         } else {
             return redirect()->back()->with('error', 'Заполните все данные о пользователе, чтобы стать разработчиком!');
         }
-        // return redirect()->back()->with('error', 'Ошибка, не заполнены необходимые данные');
     }
 
     // Метод для обновления аватарки

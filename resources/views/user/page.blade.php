@@ -35,7 +35,7 @@
     @section('body')
         <div class="m-auto mt-3 p-3 w-75 rounded border border-secondary {{ $user->banned ? 'alert alert-danger' : null }}">
             @if ($user->avatar)
-                <div class="avatar avatar-big">
+                <div class="avatar rounded-circle avatar-big">
                     <img src="{{ asset('storage/imgs/users/avatars/' . $user->avatar) }}" alt="">
                 </div>
             @endif
@@ -50,21 +50,58 @@
                     @endif
                 </h2>
                 <div>
-                    @auth
-                        @if (auth()->user()->id != $user->id && $user->role_id === 2)
-                            @php
-                                $substyle = !$subscribed ? 'success' : 'secondary';
-                                $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
-                                $title = !$subscribed
-                                    ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этого разработчика'
-                                    : 'Отказаться от подписки на обновления разработчика';
-                            @endphp
-                            <a href="{{ route('subscribe', ['type' => 'developer', 'id' => $user->id]) }}"
-                                class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
-                        @endif
-                    @endauth
-                    <a href="{{ route('home', ['author_id' => $user->id]) }}" class="btn btn-primary">Проекты этого
-                        разработчика</a>
+                    @if ($teamsToInvite && !$canedit)
+                        {{-- Триггер модальки приглашения --}}
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteToTeam">
+                            Пригласить в команду
+                        </button>
+
+                        {{-- Модалька приглашения --}}
+                        <div class="modal fade" id="inviteToTeam" data-bs-keyboard="false" tabindex="-1"
+                            aria-labelledby="inviteToTeamLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <form action="{{ route('invite', ['user' => $user->id]) }}" method="post">
+                                    @csrf
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="inviteToTeamLabel">
+                                                Пригласить {{ $user->login }} в команду
+                                            </h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Закрыть"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <select name="team" class="form-select"
+                                                aria-label="Пример выбора по умолчанию">
+                                                <option disabled selected>Выберите команду</option>
+                                                @foreach ($teamsToInvite as $team)
+                                                    <option value="{{ $team->id }}">{{ $team->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Скрыть</button>
+                                            <button type="submit" class="btn btn-primary">Пригласить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+                    @if (auth()->user()->id != $user->id && $user->role_id === 2)
+                        @php
+                            $substyle = !$subscribed ? 'success' : 'secondary';
+                            $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
+                            $title = !$subscribed
+                                ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этого разработчика'
+                                : 'Отказаться от подписки на обновления разработчика';
+                        @endphp
+                        <a href="{{ route('subscribe', ['type' => 'developer', 'id' => $user->id]) }}"
+                            class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
+                        <a href="{{ route('home', ['author_id' => $user->id]) }}" class="btn btn-primary">Проекты этого
+                            разработчика</a>
+                    @endif
                     @if ($canedit)
                         @if (auth()->user()->role_id === 2 && !auth()->user()->banned)
                             <a href="{{ route('projectNew') }}" class="btn btn-success mb-1">+ Новый проект</a>
@@ -133,7 +170,8 @@
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Нет</button>
+                                        <button type="button" class="btn btn-success"
+                                            data-bs-dismiss="modal">Нет</button>
                                         <button type="submit" class="btn btn-danger">Да</button>
                                     </div>
                                 </div>
@@ -154,96 +192,116 @@
                 {!! $user->about !!}
             </p>
 
-            <div class="row">
-                @if (!empty($teams->all()))
+            @if ($user->role_id === 2)
+                {{-- Колонка с командами --}}
+                <div class="row">
                     <div class="col">
                         <b>
                             Участник команд:
                         </b>
-                        <div class="overflow-y-scroll" style="max-width: 50vh">
-                            @foreach ($teams as $team)
-                                <div class="d-flex flex-wrap align-items-center">
-                                    @if ($team->avatar)
-                                        <div class="avatar avatar-medium" style="margin-right: 10px">
-                                            <img src="{{ asset('storage/imgs/teams/avatars/' . $team->avatar) }}"
-                                                alt="">
+                        @if (!empty($teams->all()))
+                            <div class="overflow-y-scroll" style="max-width: 50vh">
+                                @foreach ($teams as $team)
+                                    <div class="d-flex flex-wrap align-items-center">
+                                        @if ($team->avatar)
+                                            <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
+                                                <img src="{{ asset('storage/imgs/teams/avatars/' . $team->avatar) }}"
+                                                    alt="">
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <a href="{{ route('devteam', ['url' => $team->url]) }}">
+                                                <b>
+                                                    {{ $team->name }}
+                                                </b>
+                                            </a>
+                                            <br>
+                                            <i class="text-secondary">
+                                                {{ $team->role }}
+                                            </i>
                                         </div>
-                                    @endif
-                                    <div>
-                                        <a href="{{ route('devteam', ['url' => $team->url]) }}">
-                                            <b>
-                                                {{ $team->name }}
-                                            </b>
-                                        </a>
-                                        <br>
-                                        <i class="text-secondary">
-                                            {{ $team->role }}
-                                        </i>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <br>
+                            <i>
+                                Пользователь не является участником ни одной команды.
+                            </i>
+                        @endif
                     </div>
-                @endif
-                @if (!empty($projects->all()))
+
+                    {{-- Колонка с проектами --}}
                     <div class="col">
                         <b>
                             Проекты:
                         </b>
-                        <div class="overflow-y-scroll" style="max-width: 50vh">
-                            @foreach ($projects as $project)
-                                <div class="mb-3 p-2 rounded border shadow">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-1">
-                                        <a href="{{ route('project', ['url' => $project->url]) }}"
-                                            class="d-flex flex-wrap align-items-baseline text-decoration-none">
-                                            <h3>{{ $project->name }}</h3>
+                        @if (!empty($projects->all()))
+                            <div class="overflow-y-scroll" style="max-width: 50vh">
+                                @foreach ($projects as $project)
+                                    <div class="mb-3 p-2 rounded border shadow">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-1">
+                                            <a href="{{ route('project', ['url' => $project->url]) }}"
+                                                class="d-flex flex-wrap align-items-baseline text-decoration-none">
+                                                <h3>{{ $project->name }}</h3>
+                                            </a>
+                                        </div>
+                                        <a href="{{ route('user', ['login' => $project->author]) }}"
+                                            class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
+                                            <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
+                                                <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"
+                                                    alt="">
+                                            </div>
+                                            <p class="mb-0">
+                                                <i>
+                                                    {{ $project->author }}
+                                                </i>
+                                            </p>
                                         </a>
+                                        <i class="text-secondary">
+                                            <b>
+                                                Теги:
+                                            </b>
+                                            {{ $project->tags }}
+                                        </i>
                                     </div>
-                                    <a href="{{ route('userpage', ['login' => $project->author]) }}"
-                                        class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
-                                        <div class="avatar avatar-small" style="margin-right: 10px">
-                                            <img src="{{ asset('storage/imgs/users/avatars/' . $project->avatar) }}"
-                                                alt="">
-                                        </div>
-                                        <p class="mb-0">
-                                            <i>
-                                                {{ $project->author }}
-                                            </i>
-                                        </p>
-                                    </a>
-                                    <i class="text-secondary">
-                                        <b>
-                                            Теги:
-                                        </b>
-                                        {{ $project->tags }}
-                                    </i>
-                                </div>
-                            @endforeach
-                        </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <br>
+                            <i>
+                                Пользователь не публиковал проектов.
+                            </i>
+                        @endif
                     </div>
-                @endif
+            @endif
+
+            <div class="col">
+                <b>
+                    Записи:
+                </b>
                 @if (!empty($posts->all()))
-                    <div class="col">
-                        <b>
-                            Последние новости:
-                        </b>
-                        <div class="overflow-y-scroll" style="max-width: 50vh">
-                            @foreach ($posts as $post)
-                                <a href="{{ route('post', ['id' => $post->id]) }}"
-                                    class="text-decoration-none text-dark">
-                                    <div class="p-2 mb-3 rounded border">
-                                        <div class="mb-2">
-                                            {!! mb_strlen($post->text) <= 200 ? $post->text : mb_substr($post->text, 0, 200) . '...' !!}
-                                        </div>
-                                        <small>
-                                            {!! $post->formatted_created_at !!}
-                                        </small>
+                    <div class="overflow-y-scroll" style="max-width: 50vh">
+                        @foreach ($posts as $post)
+                            <a href="{{ route('post', ['id' => $post->id]) }}" class="text-decoration-none text-dark">
+                                <div class="p-2 mb-3 rounded border">
+                                    <div class="mb-2">
+                                        {!! mb_strlen($post->text) <= 200 ? $post->text : mb_substr($post->text, 0, 200) . '...' !!}
                                     </div>
-                                </a>
-                            @endforeach
-                        </div>
+                                    <small>
+                                        {!! $post->formatted_created_at !!}
+                                    </small>
+                                </div>
+                            </a>
+                        @endforeach
                     </div>
+                @else
+                    <br>
+                    <i>
+                        Пользователь не публиковал записей.
+                    </i>
                 @endif
             </div>
-        @endsection
+        </div>
+    @endsection
 @endif

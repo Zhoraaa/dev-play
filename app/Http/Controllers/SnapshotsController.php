@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CustomEmail;
 use App\Models\Snapshots;
 use Carbon\Carbon;
 use Hash;
-use Illuminate\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\ProjectMedia;
-use App\Models\Project;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use App\Models\Project; 
+use App\Models\Subscribes;
+use Illuminate\Support\Facades\Mail;
 
 class SnapshotsController extends Controller
 {
@@ -48,10 +48,11 @@ class SnapshotsController extends Controller
             return redirect()->back()->with('error', 'Версия не найдена');
         }
 
-        $media = ProjectMedia::where('project_id', '=', $snapshot->project_id)
+        $medias = ProjectMedia::where('project_id', '=', $snapshot->project_id)
             ->where('snapshot_id', '=', $snapshot->id)
             ->where('for_download', '=', 0)
-            ->get();
+            ->get()
+            ->toArray();
 
         $downloadable = ProjectMedia::where('project_id', '=', $snapshot->project_id)
             ->where('snapshot_id', '=', $snapshot->id)
@@ -65,7 +66,7 @@ class SnapshotsController extends Controller
         return view('snapshot.page', [
             'url' => $url,
             'snapshot' => $snapshot,
-            'media' => $media,
+            'medias' => $medias,
             'downloadable' => $downloadable,
             'canedit' => $canedit
         ]);
@@ -133,8 +134,31 @@ class SnapshotsController extends Controller
             'description' => $data['description'],
         ]);
 
+        // Загрузка файлов
         $this->multiloadMedia($data, $project->id, 'snapshots/media/', 'images', 0, $snapshot->id);
         $this->multiloadMedia($data, $project->id, 'snapshots/downloadable/', 'downloadable', 1, $snapshot->id);
+
+        // Рассылка подписчикам проекта
+
+        // Рассылка подписчикам разработчика
+        $subs = Subscribes::where('sub_for', '=', $snapshot->project_id)
+            ->where('sub_type', '=', 'project')
+            ->join('users', 'users.id', 'subscribes.subscriber_id')
+            ->select(
+                'users.email'
+            )
+            ->get();
+
+        if (!empty($subs->all())) {
+            foreach ($subs as $sub) {
+                Mail::to($sub->email)->send(
+                    new CustomEmail(
+                        'Новая версия проекта "' . $project->name . '".',
+                        'Подробнее можете ознакмиться по <a href="' . route('snapshot', ['url' => $project->url, 'build'=> $snapshot->name]) . '">ссылке</a>.'
+                    )
+                );
+            }
+        }
 
         Project::where('url', $url)->update(['updated_at' => now()]);
 

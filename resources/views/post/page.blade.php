@@ -14,9 +14,9 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
             @if ($post->show_true_author === 1)
                 {{-- Разработчик как автор --}}
-                <a href="{{ route('userpage', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
+                <a href="{{ route('user', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
                     @if ($post->avatar)
-                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                        <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
                             <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
                         </div>
                     @endif
@@ -31,7 +31,7 @@
                 <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
                     class="d-flex flex-wrap align-items-center">
                     @if ($post->showing_author_avatar)
-                        <div class="avatar avatar-medium" style="margin-right: 10px">
+                        <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
                             <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
                                 alt="">
                         </div>
@@ -59,25 +59,29 @@
         </div>
 
         @if ($post->media_files)
+            @php
+                // Подготовим список изображений
+                $media_files = explode(',', $post->media_files);
+            @endphp
             {{-- Триггер модальки с медиа --}}
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Просмотреть изображения
-            </button>
+            <div data-bs-toggle="modal" data-bs-target="#mediaFiles">
+                @foreach ($media_files as $media_file)
+                    <img src="{{ asset('storage/imgs/posts/media/' . $media_file) }}" class="shadow-sm m-1"
+                        alt="{{ $media_file }}" style="height: 100px; cursor: pointer">
+                @endforeach
+            </div>
 
             {{-- Модаль с медиа --}}
-            <div class="modal modal-xl fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            <div class="modal modal-xl fade" id="mediaFiles" tabindex="-1" aria-labelledby="mediaFilesLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Медиафайлы</h1>
+                            <h1 class="modal-title fs-5" id="mediaFilesLabel">Медиафайлы</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                         </div>
                         <div class="modal-body">
                             {{-- Вывод медиа --}}
-                            @php
-                                $media_files = explode(',', $post->media_files);
-                            @endphp
                             <div id="carouselExample" class="carousel slide">
                                 <div class="carousel-inner rounded border overflow-hidden">
                                     {{-- Генерация слайдера с картинками --}}
@@ -85,7 +89,7 @@
                                         <div class="carousel-item {{ $key === 0 ? 'active' : null }}">
                                             <div class="w-100 carousel-img-wrapper">
                                                 <img src="{{ asset('storage/imgs/posts/media/' . $media_file) }}"
-                                                    class="d-block shadow" alt="...">
+                                                    class="d-block shadow" alt="{{ $media_file }}">
                                             </div>
                                         </div>
                                     @endforeach
@@ -161,10 +165,10 @@
                 <div class="w-100 mb-1 border"></div>
                 <div class="p-2 mb-2">
                     <div class="mb-3 d-flex flex-wrap justify-content-between align-items-center">
-                        <a href="{{ route('userpage', ['login' => $comm->author]) }}"
+                        <a href="{{ route('user', ['login' => $comm->author]) }}"
                             class="d-flex flex-wrap align-items-center">
                             @if ($comm->avatar)
-                                <div class="avatar avatar-small" style="margin-right: 10px">
+                                <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
                                     <img src="{{ asset('storage/imgs/users/avatars/' . $comm->avatar) }}" alt="">
                                 </div>
                             @endif

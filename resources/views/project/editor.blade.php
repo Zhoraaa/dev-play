@@ -28,7 +28,7 @@
                     <input type="text" name="url" class="form-control" id="url"
                         value="{{ old('url') ?? ($project->url ?? null) }}">
                     <label for="url">URL</label>
-                    <small class="text-secondary"><i>Ссылка на проект, например exampleProj</i></small>
+                    <small class="text-secondary criteria"><i>Ссылка на проект, например exampleProj</i></small>
                 </div>
             </div>
             <div class="col mt-3">
@@ -48,12 +48,15 @@
                 <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить ссылку</button>
             </div>
         </div>
-        <select class="form-select mb-3" aria-label="" name="team">
-            <option value="0" selected disabled>Дать доступ команде</option>
-            @foreach ($teams as $team)
-                <option value="{{ $team->id }}">{{ $team->name }}</option>
-            @endforeach
-        </select>
+        @if ($teams->all())
+            <label>Совместный доступ</label>
+            <select class="form-select mb-3" aria-label="" name="team">
+                <option value="null" selected>Без совместного доступа</option>
+                @foreach ($teams as $team)
+                    <option value="{{ $team->id }}">{{ $team->name }}</option>
+                @endforeach
+            </select>
+        @endif
 
         <!-- Модаль тегов -->
         <div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
@@ -65,9 +68,13 @@
                     </div>
                     <div class="modal-body">
                         <div class="overflow-y-scroll mb-3" style="max-height: 30vh">
+                            {{-- Поиск тегов --}}
+                            <div class="form-group mb-3">
+                                <input type="text" id="search" class="form-control" placeholder="Поиск по тегам...">
+                            </div>
                             {{-- Генерация списка тегов --}}
                             @foreach ($tags as $tag)
-                                <div class="form-check">
+                                <div class="form-check searchable">
                                     <input class="form-check-input" type="checkbox" id="tag{{ $tag->id }}"
                                         name="tag-{{ $tag->id }}"
                                         {{ isset($selectedTags) ? $selectedTags[$tag->id] : null }}>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CustomEmail;
 use App\Models\DevTeam;
 use App\Models\DevToTeamConnection;
 use App\Models\Post;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -68,6 +70,7 @@ class DevTeamController extends Controller
 
         // Список участников
         $members = DevToTeamConnection::where('team_id', '=', $team->id)
+            ->where('role', '!=', 'Приглашён')
             ->join('users', 'users.id', 'dev_to_team_connections.developer_id')
             ->select('users.*', 'dev_to_team_connections.role')
             ->get();
@@ -117,7 +120,7 @@ class DevTeamController extends Controller
             ->where('author_mask', '=', $team->id)
             ->get();
 
-            
+
         foreach ($posts as $post) {
             // Форматирование даты и времени создания (created_at)
             $createdAt = Carbon::parse($post->created_at);
@@ -134,6 +137,13 @@ class DevTeamController extends Controller
             $post->formatted_updated_at = "$updatedAtDiff <i class='text-secondary'>($updatedAtFormatted)</i>";
         }
 
+        $invited = false;
+        if (Auth::user()) {
+            $invited = DevToTeamConnection::where('team_id', '=', $team->id)
+                ->where('developer_id', '=', Auth::user()->id)
+                ->where('role', '=', 'Приглашён')
+                ->count();
+        }
 
         return view('devteam.page', [
             'url' => $url,
@@ -142,7 +152,8 @@ class DevTeamController extends Controller
             'members' => $members,
             'projects' => $projects,
             'posts' => $posts,
-            'subscribed' => $subscribed
+            'subscribed' => $subscribed,
+            'invited' => $invited,
         ]);
     }
 
@@ -351,7 +362,7 @@ class DevTeamController extends Controller
             DevToTeamConnection::where('team_id', '=', $team->id)->delete();
             DevTeam::where('url', $url)->delete();
 
-            return redirect()->route('userpage', ['login' => Auth::user()->login])->with('success', 'Спасибо, что были в команде с нами!');
+            return redirect()->route('user', ['login' => Auth::user()->login])->with('success', 'Спасибо, что были в команде с нами!');
         } else {
             return redirect()->route('devteam', ['url' => $team->url])->with('error', 'Неверный пароль');
         }
@@ -465,5 +476,129 @@ class DevTeamController extends Controller
 
         // Возвращаем обработанный текст
         return $processedText;
+    }
+
+    public function invite(Request $request, $user)
+    {
+        // Проверка на идентичные записи
+        $connection_exists = DevToTeamConnection::where('developer_id', '=', $user)
+            ->where('team_id', '=', $request->team)
+            ->count();
+
+        if (!$connection_exists) {
+            // Приглашение в команду
+            $connected = DevToTeamConnection::create([
+                'developer_id' => $user,
+                'team_id' => $request->team,
+                'role' => 'Приглашён'
+            ]);
+
+            $team = DevTeam::where('id', '=', $request->team)->first();
+            $user = User::where('id', '=', $user)->first();
+
+            if ($connected) {
+                Mail::to($user->email)->send(
+                    new CustomEmail(
+                        'Уважаемый ' . $user->login . ', вы были приглашены в команду "' . $team->name . '"',
+                        'Узнать о команде и принять приглашение можно по <a href="' . route('devteam', ['url' => $team->url]) . '">ссылке</a>.'
+                    )
+                );
+
+                return redirect()->back()->with('success', 'Пользователь приглашён, мы пришлём на Вашу почту уведомление о его решении.');
+            } else {
+                return redirect()->back()->with('error', 'Не удалось пригласить пользователя.');
+            }
+        } else {
+            return redirect()->back()->with('error', 'Пользователь уже приглашён.');
+        }
+    }
+
+    public function inviteResponse($team, $user, $response)
+    {
+        $team = DevTeam::where('id', '=', $team)->first();
+        $inviter = DevToTeamConnection::where('team_id', '=', $team->id)
+            ->join('users', 'users.id', 'dev_to_team_connections.developer_id')
+            ->select(
+                'users.*'
+            )
+            ->orderBy('id', 'asc')
+            ->first();
+
+        if ($response) {
+            // В случае принятия приглашения
+            $updated = DevToTeamConnection::where('developer_id', '=', Auth::user()->id)
+                ->where('team_id', '=', $team->id)
+                ->update([
+                    'role' => 'Разработчик'
+                ]);
+
+
+            if ($updated) {
+                // В случае, если обновление удалось
+                Mail::to($inviter->email)->send(
+                    new CustomEmail(
+                        'Пользователь ' . Auth::user()->login . ' принял ваше приглашение в команду "' . $team->name . '"',
+                        'Ознакомиться с актуальным списком участников команды можно по ссылке можно по <a href="' . route('devteam', ['url' => $team->url]) . '">ссылке</a>.'
+                    )
+                );
+
+                Subscribes::where('subscriber_id', '=', Auth::user()->id)
+                    ->where('sub_for', '=', $team->id)
+                    ->where('sub_type', '=', 'dev_team')
+                    ->delete();
+
+                return redirect()->back()->with('success', 'Теперь вы участник команды ' . $team->name . '!');
+            } else {
+                // В случае, если обновление не удалось
+                Mail::to($inviter->email)->send(
+                    new CustomEmail(
+                        'Пользователь ' . Auth::user()->login . ' не смог принять ваше приглашение в команду "' . $team->name . '"',
+                        'Мы уже работаем над решением этой проблемы.'
+                    )
+                );
+
+                return redirect()->back()->with('error', 'Не удалось принять приглашение.');
+            }
+        } else {
+            // В случае отклонения приглашения
+            DevToTeamConnection::where('developer_id', '=', Auth::user()->id)
+                ->where('team_id', '=', $team->id)
+                ->delete();
+
+            Mail::to($inviter->email)->send(
+                new CustomEmail(
+                    'Пользователь ' . Auth::user()->login . ' отклонил ваше приглашение в команду "' . $team->name . '"',
+                    'Ознакомиться с актуальным списком участников команды можно по ссылке можно по <a href="' . route('devteam', ['url' => $team->url]) . '">ссылке</a>.'
+                )
+            );
+
+            return redirect()->back()->with('success', 'Вы отказались от приглашения в команду ' . $team->name . '!');
+        }
+    }
+
+    public function exit($team)
+    {
+        // Выход из команды
+        $team = DevTeam::where('id', '=', $team)->first();
+        $inviter = DevToTeamConnection::where('team_id', '=', $team->id)
+            ->join('users', 'users.id', 'dev_to_team_connections.developer_id')
+            ->select(
+                'users.*'
+            )
+            ->orderBy('id', 'asc')
+            ->first();
+
+        DevToTeamConnection::where('developer_id', '=', Auth::user()->id)
+            ->where('team_id', '=', $team->id)
+            ->delete();
+
+        Mail::to($inviter->email)->send(
+            new CustomEmail(
+                'Пользователь ' . Auth::user()->login . ' покинул команду "' . $team->name . '"',
+                'Ознакомиться с актуальным списком участников команды можно по ссылке можно по <a href="' . route('devteam', ['url' => $team->url]) . '">ссылке</a>.'
+            )
+        );
+
+        return redirect()->back()->with('success', 'Вы больше не участник команды ' . $team->name . '!');
     }
 }

@@ -1,15 +1,18 @@
+/* Сокрытие */
+.hidden {
+  display: none;
+}
+
 /* Аватарки */
 .avatar {
-  border-radius: 100%;
   overflow: hidden;
 
-  display: flex;
+  /* display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; */
 }
 
 .avatar > img {
-  height: 100%;
   width: 100%;
 
   position: relative;
@@ -46,4 +49,13 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* Обложки */
+.cover-wrapper {
+  overflow: hidden;
+  height: 250px;
+}
+.cover-wrapper > * {
+  height: 100%;
 }

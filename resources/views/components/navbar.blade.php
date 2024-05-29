@@ -17,11 +17,12 @@
         {{-- Ссылки на страницы сайта --}}
         <a href="{{ route('home') }}" class="m-1 btn btn-outline-primary">Проекты</a>
         <a href="{{ route('news') }}" class="m-1 btn btn-outline-primary">Новости</a>
+        <a href="{{ route('devs') }}" class="m-1 btn btn-outline-primary">Разработчики</a>
         <a href="{{ route('devTeams') }}" class="m-1 btn btn-outline-primary">Команды разработчиков</a>
         <hr>
         {{-- Ссылки пользователей --}}
         @auth
-            <a href="{{ route('userpage', ['login' => auth()->user()->login]) }}"class="m-1 btn btn-outline-primary">Личный
+            <a href="{{ route('user', ['login' => auth()->user()->login]) }}"class="m-1 btn btn-outline-primary">Личный
                 кабинет</a>
             @if (auth()->user()->role_id == 1)
                 <button class="m-1 btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#beDeveloper">Стать

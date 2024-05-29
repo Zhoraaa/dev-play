@@ -15,25 +15,39 @@
         @endif
     @endauth
 
+    <div class="m-auto mb-2 w-75">
+        <div class="input-group">
+            <span class="input-group-text">Поиск по названию:</span>
+            <input type="text" class="form-control"id="search">
+        </div>
+        <hr>
+    </div>
+
     @if (isset($devteams))
         {{-- Список команд --}}
         @foreach ($devteams as $devteam)
-            <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
-                <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-3">
-                    <a href="{{ route('devteam', ['url' => $devteam->url]) }}" class="d-flex flex-wrap align-items-baseline">
+            <div class="w-75 m-auto mb-1 p-2 rounded border searchable">
+                <div class="d-flex flex-wrap justify-content-between align-items-baseline">
+                    <a href="{{ route('devteam', ['url' => $devteam->url]) }}"
+                        class="d-flex flex-wrap align-items-baseline">
                         @if (!empty($devteam->avatar))
-                            <div class="avatar avatar-small" style="margin-right: 10px">
+                            <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
                                 <img src="{{ asset('storage/imgs/teams/avatars/' . $devteam->avatar) }}" alt="">
                             </div>
                         @endif
                         <div>
-                            <h5>
+                            <h5 class="criteria">
                                 {{ $devteam->name }}
                             </h5>
                         </div>
                     </a>
+                </div>
+                <div class="mb-2 d-flex flex-wrap justify-content-between">
+                    <div class="text-secondary">
+                        Команда сформирована
+                    </div>
                     <div>
-                            {!! $devteam->formatted_created_at !!}
+                        {!! $devteam->formatted_created_at !!}
                     </div>
                 </div>
                 <div class="mb-3">
@@ -43,6 +57,10 @@
                 </div>
             </div>
         @endforeach
+    @else
+    <i class="text-secondary">
+        На текущий момент нет ни одной команды разработчиков.
+    </i>
     @endif
 
 @endsection
