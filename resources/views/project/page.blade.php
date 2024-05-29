@@ -6,11 +6,7 @@
     $taglist = '';
     foreach ($tags as $tag) {
         $taglist .=
-            '<a href=\'/?tag-' .
-            $tag->id .
-            '=on\' class="link-primary link-primary-hover">' .
-            $tag->name .
-            '</a>, ';
+            '<a href=\'/?tag-' . $tag->id . '=on\' class="link-primary link-primary-hover">' . $tag->name . '</a>, ';
     }
     $taglist = mb_substr($taglist, 0, -2) . '.';
 @endphp
@@ -30,14 +26,15 @@
                     $substyle = !$subscribed ? 'success' : 'secondary';
                     $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
                     $title = !$subscribed
-                        ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этого разработчика'
-                        : 'Отказаться от подписки на обновления разработчика';
+                        ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этого проекта'
+                        : 'Отказаться от подписки на обновления проекта';
                 @endphp
                 <a href="{{ route('subscribe', ['type' => 'project', 'id' => $project->id]) }}"
                     class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
             @endif
             @if ($canedit && auth()->user()->role_id === 2 && !auth()->user()->banned)
-                <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+ Новая версия</a>
+                <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+ Новая
+                    версия</a>
                 <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
                     class="mr-1 mb-1 btn btn-warning">Редактировать
                     информацию</a>
