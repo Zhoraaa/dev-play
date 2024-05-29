@@ -13,7 +13,7 @@
             <button class="btn btn-success">Добавить тег</button>
         </div>
     </form>
-    <div class="m-2">
+    <div>
         <div class="input-group">
             <span class="input-group-text">Поиск по названию:</span>
             <input type="text" class="form-control"id="search">

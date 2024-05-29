@@ -27,44 +27,62 @@
                 @endphp
                 <a href="{{ route('subscribe', ['type' => 'project', 'id' => $project->id]) }}"
                     class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
+
+                <a href="{{ route('buglist', ['project' => $project->url]) }}" class="btn btn-secondary">Найденные ошибки</a>
+
+                {{-- Триггер модальки нового поста --}}
+                <button class="btn btn-outline-secondary mb-1" data-bs-toggle="modal" data-bs-target="#bugreport">Я нашёл
+                    ошибку!</button>
+                {{-- Модалька нового поста --}}
+                <form action="{{ route('postSave', ['from_team' => 0, 'team' => 0]) }}" method="post" class="modal fade"
+                    id="bugreport" tabindex="-1" aria-labelledby="bugreportLabel" aria-hidden="true">
+                    @csrf
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="bugreportLabel">Опишите ошибку.</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-floating mb-3">
+                                    <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? null !!}</textarea>
+                                    <label for="text">Что произошло?</label>
+                                    <div class="editor-buttons mt-3">
+                                        <button type="button" id="boldBtn"
+                                            class="btn btn-outline-secondary"><b>Жирный</b></button>
+                                        <button type="button" id="italicBtn"
+                                            class="btn btn-outline-secondary"><i>Курсив</i></button>
+                                        <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить
+                                            ссылку</button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="filesMultiple" class="form-label">Можете приложить скриншоты</label>
+                                    <input class="form-control" type="file" id="filesMultiple" name="images" multiple>
+                                </div>
+                                <select class="hidden" name="projID">
+                                    <option class="form-check-label" for="show_true_author" value="{{ $project->id }}"
+                                        selected>
+                                        {{ $project->name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скрыть</button>
+                                <button class="btn btn-success">Опубликовать</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             @endif
             @if ($canedit && auth()->user()->role_id >= 1)
                 <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+ Новая
                     версия</a>
-                {{-- Триггер модальки настройки oбложки --}}
-                <button class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#avatarModal">Настройка
-                    обложки</button>
-                {{-- Модалька обновления oбложки --}}
-                <div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="{{ route('coverUpdate', ['url' => $project->url]) }}" method="POST"
-                                enctype="multipart/form-data">
-                                @csrf
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="avatarModalLabel">Обновить обложку</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <input class="form-control" type="file" id="formFile" name="cover">
-                                        <small class="text-secondary"><i>Старые аватарки не
-                                                сохраняются;</i></small><br>
-                                        <small class="text-secondary"><i>Поддерживаемые форматы: .jpg,
-                                                .jpeg, .png, .gif;</i></small>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-primary">Обновить аватар</button>
-                                    <a href="{{ route('coverUpdate', ['url' => $project->url]) }}"
-                                        class="btn btn-danger">Удалить обложку</a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+
+                <a href="{{ route('buglist', ['project' => $project->url]) }}" class="btn btn-secondary">Найденные
+                    ошибки</a>
+
                 @if ($canedit === 2)
                     <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
                         class="mr-1 mb-1 btn btn-warning">Редактировать
@@ -152,14 +170,25 @@
                 {!! $project->formatted_created_at !!}
             </span>
         </div>
-        <div class="d-flex flex-wrap justify-content-between">
-            <p class="text-secondary d-block">
-                Последнее обновление:
-            </p>
-            <span class="d-block">
-                {!! $project->formatted_updated_at !!}
-            </span>
-        </div>
+        @if ($snapshots->all())
+            <div class="d-flex flex-wrap justify-content-between">
+                <p class="text-secondary d-block">
+                    Последнее обновление:
+                </p>
+                <div>
+                    @php
+                        $lastbuild = $snapshots->toArray()[0];
+                    @endphp
+                    <a href="{{ route('snapshot', ['url' => $project->url, 'build' => $lastbuild['name']]) }}">
+                        {{ $lastbuild['name'] }}
+                    </a>
+                    <span>
+                        - {!! $project->formatted_updated_at !!}
+                    </span>
+                </div>
+            </div>
+        @endif
+
     </div>
     </div>
 
@@ -175,5 +204,68 @@
         @else
             <i>Нет опубликованых версий</i>
         @endif
+    </div>
+
+    {{-- Подборка медиафайлов --}}
+    <div class="w-75 m-auto mb-5">
+
+        @if ($medias)
+            {{-- Триггер модальки с медиа --}}
+            <div class="col" data-bs-toggle="modal" data-bs-target="#mediaFiles">
+                <h5>
+                </h5>
+                <div>
+                    @foreach ($medias as $media)
+                        <img src="{{ asset('storage/snapshots/media/' . $media['file_name']) }}" class="shadow-sm m-1"
+                            alt="{{ $media['file_name'] }}" style="height: 100px; cursor: pointer">
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Модаль с медиа --}}
+            <div class="modal modal-xl fade" id="mediaFiles" tabindex="-1" aria-labelledby="mediaFilesLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="mediaFilesLabel">Медиафайлы</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Закрыть"></button>
+                        </div>
+                        <div class="modal-body">
+                            {{-- Вывод медиа --}}
+                            <div id="carouselExample" class="carousel slide">
+                                <div class="carousel-inner rounded border overflow-hidden">
+                                    {{-- Генерация слайдера с картинками --}}
+                                    @foreach ($medias as $key => $media)
+                                        <div class="carousel-item {{ $key === 0 ? 'active' : null }}">
+                                            <div class="w-100 carousel-img-wrapper">
+                                                <img src="{{ asset('storage/snapshots/media/' . $media['file_name']) }}"
+                                                    class="d-block shadow" alt="{{ $media['file_name'] }}">
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
+                                    data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Предыдущий</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
+                                    data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Следующий</span>
+                                </button>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
     </div>
 @endsection

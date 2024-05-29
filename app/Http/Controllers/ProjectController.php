@@ -6,6 +6,7 @@ use App\Mail\CustomEmail;
 use App\Models\DevTeam;
 use App\Models\DevToTeamConnection;
 use App\Models\Project;
+use App\Models\ProjectMedia;
 use App\Models\Subscribes;
 use App\Models\Tag;
 use App\Models\Snapshots;
@@ -108,6 +109,12 @@ class ProjectController extends Controller
             $canedit = Auth::user()->banned ? 0 : $canedit;
         }
 
+        $medias = ProjectMedia::where('project_id', '=', $project->id)
+            ->where('for_download', '=', 0)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->toArray();
+
         return view('project.page', [
             'url' => $url,
             'project' => $project,
@@ -116,6 +123,7 @@ class ProjectController extends Controller
             'subscribed' => $subscribed,
             'team' => $team,
             'canedit' => $canedit,
+            'medias' => $medias,
         ]);
     }
 

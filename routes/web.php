@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 // Конкретные страницы
 Route::get('/', [PageController::class, 'projects'])->name('home');
 Route::get('/news', [PageController::class, 'news'])->name('news');
+Route::get('/devs', [PageController::class, 'devs'])->name('devs');
 Route::get('/devteams', [PageController::class, 'devTeams'])->name('devTeams');
 Route::get('/rules/publication', function () {
     return view('rules.publication');
@@ -104,6 +105,8 @@ Route::get('/project/{url}/snapshot/{build}/', [SnapshotsController::class, 'ind
 Route::post('/project/{url}/snapshot/save', [SnapshotsController::class, 'save'])->middleware('auth')->name('snapshotSaveChanges');
 Route::get('/project/{url}/snapshot/{build}/edit', [SnapshotsController::class, 'editor'])->middleware('auth')->name('snapshotEditor');
 Route::post('/project/{url}/snapshot/{build}/delete', [SnapshotsController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');
+// Список багов
+Route::get('/project/{project}/bugs', [PostController::class, 'bugs'])->name('buglist');
 
 // Посты
 Route::post('/post-save/{from_team}/{team}', [PostController::class, 'save'])->middleware('auth')->name('postSave');

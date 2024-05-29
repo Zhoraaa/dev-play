@@ -15,11 +15,12 @@
         @endif
     @endauth
 
-    <div class="m-2">
+    <div class="m-auto mb-2 w-75">
         <div class="input-group">
             <span class="input-group-text">Поиск по названию:</span>
             <input type="text" class="form-control"id="search">
         </div>
+        <hr>
     </div>
 
     @if (isset($devteams))
@@ -56,6 +57,10 @@
                 </div>
             </div>
         @endforeach
+    @else
+    <i class="text-secondary">
+        На текущий момент нет ни одной команды разработчиков.
+    </i>
     @endif
 
 @endsection

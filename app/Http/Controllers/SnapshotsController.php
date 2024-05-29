@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\ProjectMedia;
-use App\Models\Project;
+use App\Models\Project; 
 use App\Models\Subscribes;
 use Illuminate\Support\Facades\Mail;
 
@@ -48,10 +48,11 @@ class SnapshotsController extends Controller
             return redirect()->back()->with('error', 'Версия не найдена');
         }
 
-        $media = ProjectMedia::where('project_id', '=', $snapshot->project_id)
+        $medias = ProjectMedia::where('project_id', '=', $snapshot->project_id)
             ->where('snapshot_id', '=', $snapshot->id)
             ->where('for_download', '=', 0)
-            ->get();
+            ->get()
+            ->toArray();
 
         $downloadable = ProjectMedia::where('project_id', '=', $snapshot->project_id)
             ->where('snapshot_id', '=', $snapshot->id)
@@ -65,7 +66,7 @@ class SnapshotsController extends Controller
         return view('snapshot.page', [
             'url' => $url,
             'snapshot' => $snapshot,
-            'media' => $media,
+            'medias' => $medias,
             'downloadable' => $downloadable,
             'canedit' => $canedit
         ]);

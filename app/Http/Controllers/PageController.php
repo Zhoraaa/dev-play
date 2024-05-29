@@ -6,6 +6,7 @@ use App\Models\DevTeam;
 use App\Models\Post;
 use App\Models\Project;
 use App\Models\Tag;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -122,7 +123,7 @@ class PageController extends Controller
         ]);
     }
 
-    public function news(Request $request)
+    public function news()
     {
         $news = Post::orderBy('created_at', 'desc')
             ->where('type_id', '=', 1)
@@ -157,7 +158,8 @@ class PageController extends Controller
 
         // dd($news);
         return view('newslist', [
-            'news' => $news
+            'news' => $news,
+            'buglist' => false,
         ]);
     }
 
@@ -186,7 +188,14 @@ class PageController extends Controller
         ]);
     }
 
-    public function developers() {
-        
+    public function devs()
+    {
+        $devs = User::where('role_id', '=', 2)
+            ->orderBy('login')
+            ->get();
+
+        return view('devlist', [
+            'devs' => $devs,
+        ]);
     }
 }

@@ -17,6 +17,7 @@
         {{-- Ссылки на страницы сайта --}}
         <a href="{{ route('home') }}" class="m-1 btn btn-outline-primary">Проекты</a>
         <a href="{{ route('news') }}" class="m-1 btn btn-outline-primary">Новости</a>
+        <a href="{{ route('devs') }}" class="m-1 btn btn-outline-primary">Разработчики</a>
         <a href="{{ route('devTeams') }}" class="m-1 btn btn-outline-primary">Команды разработчиков</a>
         <hr>
         {{-- Ссылки пользователей --}}

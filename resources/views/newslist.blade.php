@@ -1,50 +1,61 @@
 @extends('layout')
 
 @section('title')
-    Лента новостей
+    {{ $buglist ? 'Отчёты об ошибках "' . $project->name . '"' : 'Лента новостей' }}
 @endsection
 
 @section('body')
-    @auth
-        {{-- Триггер модальки нового поста --}}
-        <div class="w-75 m-auto mt-2 mb-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postEditorModal">
-                Новый пост
-            </button>
-        </div>
+    @if ($buglist)
+        <a href="{{ route('project', ['url' => $project->url]) }}" class="btn btn-secondary d-block w-75 m-auto mb-2">
+            ← Вернуться на страницу проекта
+        </a>
+    @endif
 
-        {{-- Модалька нового поста --}}
-        <form action="{{ route('postSave', ['from_team' => 0, 'team' => 0]) }}" enctype="multipart/form-data" method="post"
-            class="modal fade" id="postEditorModal" tabindex="-1" aria-labelledby="postEditorModalLabel" aria-hidden="true">
-            @csrf
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="postEditorModalLabel">Написать пост</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-floating mb-3">
-                            <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? null !!}</textarea>
-                            <label for="text">Что нового?</label>
-                            <div class="editor-buttons mt-3">
-                                <button type="button" id="boldBtn" class="btn btn-outline-secondary"><b>Жирный</b></button>
-                                <button type="button" id="italicBtn" class="btn btn-outline-secondary"><i>Курсив</i></button>
-                                <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить ссылку</button>
+    @auth
+        @if (!$buglist)
+            {{-- Триггер модальки нового поста --}}
+            <div class="w-75 m-auto mt-2 mb-2">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postEditorModal">
+                    Новый пост
+                </button>
+            </div>
+
+            {{-- Модалька нового поста --}}
+            <form action="{{ route('postSave', ['from_team' => 0, 'team' => 0]) }}" enctype="multipart/form-data" method="post"
+                class="modal fade" id="postEditorModal" tabindex="-1" aria-labelledby="postEditorModalLabel" aria-hidden="true">
+                @csrf
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="postEditorModalLabel">Написать пост</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-floating mb-3">
+                                <textarea name="text" id="editor" style="min-height: 130px; resize: none" class="form-control" id="about">{!! old('description') ?? null !!}</textarea>
+                                <label for="text">Что нового?</label>
+                                <div class="editor-buttons mt-3">
+                                    <button type="button" id="boldBtn"
+                                        class="btn btn-outline-secondary"><b>Жирный</b></button>
+                                    <button type="button" id="italicBtn"
+                                        class="btn btn-outline-secondary"><i>Курсив</i></button>
+                                    <button type="button" id="linkBtn" class="btn btn-outline-secondary">Вставить
+                                        ссылку</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="filesMultiple" class="form-label">Изображения</label>
+                                <input class="form-control" type="file" id="filesMultiple" name="media[]" multiple>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="filesMultiple" class="form-label">Изображения</label>
-                            <input class="form-control" type="file" id="filesMultiple" name="media[]" multiple>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скрыть</button>
+                            <button class="btn btn-success">Опубликовать</button>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скрыть</button>
-                        <button class="btn btn-success">Опубликовать</button>
-                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        @endif
     @endauth
 
     {{-- Список постов --}}
@@ -108,13 +119,6 @@
                     @endif
                     <div>
                         {!! $post->formatted_created_at !!}
-                        @auth
-                            @if ($post->author_id === auth()->user()->id || auth()->user()->role >= 3)
-                                <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
-                                    Удалить пост
-                                </a>
-                            @endif
-                        @endauth
                     </div>
                 </div>
                 <div class="mb-3">
@@ -124,8 +128,15 @@
                 </div>
                 <div class="">
                     <a href="{{ route('post', ['id' => $post->id]) }}" class="btn btn-primary">
-                        Перейти к обсуждению →
+                        {{ $buglist ? 'Смотреть подробнее' : 'Перейти к обсуждению' }} →
                     </a>
+                    @auth
+                        @if ($post->author_id === auth()->user()->id || auth()->user()->role >= 3)
+                            <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
+                                Удалить {{ $buglist ? 'отчёт' : 'пост' }}
+                            </a>
+                        @endif
+                    @endauth
                 </div>
             </div>
         @endforeach
