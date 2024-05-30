@@ -101,7 +101,7 @@ Route::get('/project/{url}/coverDelete', [ProjectController::class, 'coverDelete
 Route::get('/project/{url}/new-snapshot', function ($url) {
     return view('snapshot.editor', ['url' => $url]);
 })->middleware('auth')->name('snapshotNew');
-Route::get('/project/{url}/snapshot/{build}/', [SnapshotsController::class, 'index'])->middleware('auth')->name('snapshot');
+Route::get('/project/{url}/snapshot/{build}/', [SnapshotsController::class, 'index'])->name('snapshot');
 Route::post('/project/{url}/snapshot/save', [SnapshotsController::class, 'save'])->middleware('auth')->name('snapshotSaveChanges');
 Route::get('/project/{url}/snapshot/{build}/edit', [SnapshotsController::class, 'editor'])->middleware('auth')->name('snapshotEditor');
 Route::post('/project/{url}/snapshot/{build}/delete', [SnapshotsController::class, 'destroy'])->middleware('auth')->name('snapshotDelete');

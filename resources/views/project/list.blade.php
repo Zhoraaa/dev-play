@@ -83,7 +83,7 @@
 
     {{-- Список проектов --}}
     @if (isset($projects))
-        <div class="w-75 m-auto d-flex flex-wrap justify-content-evenly">
+        <div class="w-75 m-auto d-flex flex-wrap justify-content-center">
             @foreach ($projects as $project)
                 <div class="card" style="width: 18rem; margin: 5px;">
                     @php
@@ -124,7 +124,11 @@
                                 </p>
                             </a>
                         @else
-                            <a href="{{ route('user', ['login' => $project->author]) }}"
+                            @php
+                                $link = $project->author ? route('user', ['login' => $project->author]) : null;
+                                $linkText = $project->author ? $project->author . '(Разработчик)' : 'Пользователь удалил аккаунт';
+                            @endphp
+                            <a href="{{ $link }}"
                                 class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
                                 @if ($project->avatar)
                                     <div class="avatar rounded-circle avatar-small" style="margin-right: 10px">
@@ -134,7 +138,7 @@
                                 @endif
                                 <p class="mb-0">
                                     <i>
-                                        {{ $project->author }} (Разработчик)
+                                        {{ $linkText }}
                                     </i>
                                 </p>
                             </a>

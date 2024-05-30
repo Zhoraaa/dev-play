@@ -59,9 +59,7 @@ class SnapshotsController extends Controller
             ->where('for_download', '=', 1)
             ->get();
 
-
-
-        $canedit = $snapshot->author_id == Auth::user()->id ? true : false;
+        $canedit = Auth::user() && $snapshot->author_id == Auth::user()->id ? true : false;
 
         return view('snapshot.page', [
             'url' => $url,

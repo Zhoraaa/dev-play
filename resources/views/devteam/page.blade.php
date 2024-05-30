@@ -111,36 +111,39 @@
                         </div>
                     </form>
                     <a href="{{ route('projectNew') }}" class="btn btn-success mb-1">+ Новый проект</a>
+                    @if ($canedit < 2)
+                        {{-- Триггер модальки подтверждения --}}
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#exitTeam">
+                            Покинуть команду
+                        </button>
 
-                    {{-- Триггер модальки подтверждения --}}
-                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exitTeam">
-                        Покинуть команду
-                    </button>
-
-                    {{-- Модалька подтверждения --}}
-                    <div class="modal fade" id="exitTeam" data-bs-backdrop="static" data-bs-keyboard="false"
-                        tabindex="-1" aria-labelledby="exitTeamLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exitTeamLabel">Вы уверены?</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Закрыть"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Вы точно хотите выйти из команды {{ $team->name }}?
-                                    <br>
-                                    Это действие нельзя быдет отменить.
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary"
-                                        data-bs-dismiss="modal">Отмена</button>
-                                    <a href="{{ route('exit', ['team' => $team->id]) }}" class="btn btn-secondary">Да, я
-                                        уверен</a>
+                        {{-- Модалька подтверждения --}}
+                        <div class="modal fade" id="exitTeam" tabindex="-1" aria-labelledby="exitTeamLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exitTeamLabel">Вы уверены?</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Закрыть"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Вы точно хотите выйти из команды {{ $team->name }}?
+                                        <br>
+                                        Это действие нельзя быдет отменить.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary"
+                                            data-bs-dismiss="modal">Отмена</button>
+                                        <a href="{{ route('exit', ['team' => $team->id]) }}"
+                                            class="btn btn-secondary">Да, я
+                                            уверен</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                     @if ($canedit === 2)
                         {{-- Триггер модальки настройки аватарки --}}
                         <button class="btn btn-primary mb-1" data-bs-toggle="modal"

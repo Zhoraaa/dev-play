@@ -27,36 +27,6 @@
                 @endphp
                 <a href="{{ route('subscribe', ['type' => 'project', 'id' => $project->id]) }}"
                     class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
-<<<<<<< HEAD
-            @endif
-            @if ($canedit && auth()->user()->role_id === 2 && !auth()->user()->banned)
-                <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+ Новая
-                    версия</a>
-                <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
-                    class="mr-1 mb-1 btn btn-warning">Редактировать
-                    информацию</a>
-                <button class="mr-1 mb-1 btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
-                    проект</button>
-        </div>
-        <!-- Модалька подтверждения -->
-        <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel" aria-hidden="true">
-            <form class="modal-dialog" action="{{ route('projectDelete', ['url' => $project->url]) }}" method="POST">
-                @csrf
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите удалить
-                            аккаунт?</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Это действие нельзя будет отменить. Все упоминания о проекте на сайте исчезнут,
-                        некоторая
-                        информация будет безвозвратно утрачена.
-                        <div class="form-floating mt-3">
-                            <input type="password" name="password" class="form-control" id="floatingPassword"
-                                placeholder="Password">
-                            <label for="floatingPassword">Для подтверждения введите пароль.</label>
-=======
 
                 <a href="{{ route('buglist', ['project' => $project->url]) }}" class="btn btn-secondary">Найденные ошибки</a>
 
@@ -102,7 +72,6 @@
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скрыть</button>
                                 <button class="btn btn-success">Опубликовать</button>
                             </div>
->>>>>>> 97da62af9cb4268239399fffc86f1d43a848630e
                         </div>
                     </div>
                 </form>

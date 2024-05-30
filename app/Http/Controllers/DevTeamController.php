@@ -43,19 +43,25 @@ class DevTeamController extends Controller
             return redirect()->back()->with('error', 'Команда не найдена');
         }
 
-        $ismember = DevToTeamConnection::where('team_id', '=', $team->id)
-            ->where('developer_id', '=', Auth::user()->id)
-            ->count()
-            ? true : false;
+        // Проверка участия в команде
+        $ismember = false;
+        if (Auth::user()) {
+            $ismember = DevToTeamConnection::where('team_id', '=', $team->id)
+                ->where('developer_id', '=', Auth::user()->id)
+                ->count()
+                ? true : false;
+        }
 
 
         if (!$ismember) {
             $canedit = 0;
         } else {
-            switch (DevToTeamConnection::where('team_id', '=', $team->id)
-                ->where('developer_id', '=', Auth::user()->id)
-                ->first()
-                ->role) {
+            switch (
+                DevToTeamConnection::where('team_id', '=', $team->id)
+                    ->where('developer_id', '=', Auth::user()->id)
+                    ->first()
+                    ->role
+            ) {
                 default:
                     $canedit = 0;
                     break;

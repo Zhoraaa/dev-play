@@ -89,19 +89,21 @@
                             </div>
                         </div>
                     @endif
-                    @if (auth()->user()->id != $user->id && $user->role_id === 2)
-                        @php
-                            $substyle = !$subscribed ? 'success' : 'secondary';
-                            $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
-                            $title = !$subscribed
-                                ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этого разработчика'
-                                : 'Отказаться от подписки на обновления разработчика';
-                        @endphp
-                        <a href="{{ route('subscribe', ['type' => 'developer', 'id' => $user->id]) }}"
-                            class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
-                        <a href="{{ route('home', ['author_id' => $user->id]) }}" class="btn btn-primary">Проекты этого
-                            разработчика</a>
-                    @endif
+                    @auth
+                        @if (auth()->user()->id != $user->id && $user->role_id === 2)
+                            @php
+                                $substyle = !$subscribed ? 'success' : 'secondary';
+                                $subtext = !$subscribed ? 'Подписаться' : 'Отписаться';
+                                $title = !$subscribed
+                                    ? 'Подписавшись на обновления команды вы будете получать на почту уведомления об обновлениях проектов этого разработчика'
+                                    : 'Отказаться от подписки на обновления разработчика';
+                            @endphp
+                            <a href="{{ route('subscribe', ['type' => 'developer', 'id' => $user->id]) }}"
+                                class="btn btn-{{ $substyle }}" title="{{ $title }}">{{ $subtext }}</a>
+                            <a href="{{ route('home', ['author_id' => $user->id]) }}" class="btn btn-primary">Проекты этого
+                                разработчика</a>
+                        @endif
+                    @endauth
                     @if ($canedit)
                         @if (auth()->user()->role_id === 2 && !auth()->user()->banned)
                             <a href="{{ route('projectNew') }}" class="btn btn-success mb-1">+ Новый проект</a>

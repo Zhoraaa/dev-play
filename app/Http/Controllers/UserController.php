@@ -105,7 +105,7 @@ class UserController extends Controller
 
             // Если разраб, можно пригласить в свою команду.
             $teamsToInvite = false;
-            if (Auth::user()->role_id === 2 && $user->role_id === 2) {
+            if (Auth::user() && Auth::user()->role_id === 2 && $user->role_id === 2) {
                 $teamsToInvite = DevToTeamConnection::where('developer_id', '=', Auth::user()->id)
                     ->where('role', 'Глава')
                     ->join('dev_teams', 'dev_teams.id', 'dev_to_team_connections.team_id')

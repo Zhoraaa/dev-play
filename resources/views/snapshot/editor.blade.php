@@ -2,7 +2,7 @@
 
 
 @section('title')
-    Редактор снапшотов
+    Редактор версий
 @endsection
 
 @section('body')
