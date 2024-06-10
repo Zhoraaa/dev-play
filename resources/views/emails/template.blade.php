@@ -19,7 +19,7 @@
         {!! $title !!}
     </h3>
     <br>
-    <div class="border rounded shadow-sm">
+    <div class="border rounded shadow-sm m-1 p-2">
         {!! $content !!}
     </div>
     <br>
