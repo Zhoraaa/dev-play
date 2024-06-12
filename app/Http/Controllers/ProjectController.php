@@ -370,14 +370,18 @@ class ProjectController extends Controller
 
     public function destroy(Request $request, $url)
     {
-        $project = Project::join('users', 'projects.author_id', '=', 'users.id')
+        $project = Project::leftJoin('users', 'projects.author_id', '=', 'users.id')
             ->select('projects.*', 'users.password')
             ->where('url', $url)->first();
 
-        if (Hash::check($request->password, $project->password)) {
+        if ($project->author_id === null xor Hash::check($request->password, $project->password)) {
             TagToProjectConnection::where('project_id', '=', $project->id)->delete();
             Project::where('url', $url)->delete();
 
+
+            if ($project->author_id === null) {
+                return redirect()->route('home')->with('success', 'Проект удалён');
+            }
             return redirect()->route('user', ['login' => Auth::user()->login])->with('success', 'Спасибо, что размещали свой проект у нас!');
         } else {
             return redirect()->route('project', ['url' => $project->url])->with('error', 'Неверный пароль');

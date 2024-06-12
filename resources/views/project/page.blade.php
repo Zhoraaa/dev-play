@@ -59,7 +59,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="filesMultiple" class="form-label">Можете приложить скриншоты</label>
-                                    <input class="form-control" type="file" id="filesMultiple" name="images" multiple>
+                                    <input class="form-control" type="file" id="filesMultiple" name="images[]" multiple>
                                 </div>
                                 <select class="hidden" name="projID">
                                     <option class="form-check-label" for="show_true_author" value="{{ $project->id }}"
@@ -76,51 +76,54 @@
                     </div>
                 </form>
             @endif
-            @if ($canedit && auth()->user()->role_id >= 1)
+            {{-- Обновления --}}
+            @if ($canedit)
                 <a href="{{ route('snapshotNew', ['url' => $project->url]) }}" class="mr-1 mb-1 btn btn-success">+ Новая
                     версия</a>
-
                 <a href="{{ route('buglist', ['project' => $project->url]) }}" class="btn btn-secondary">Найденные
                     ошибки</a>
+            @endif
+            @if ($canedit === 2)
+                <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
+                    class="mr-1 mb-1 btn btn-warning">Редактировать
+                    информацию</a>
+            @endif
+            {{-- Редактирование и удаление информации --}}
+            @auth
+                @if ($canedit === 2 || auth()->user()->role_id >= 3)
+                    <button class="mr-1 mb-1 btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
+                        проект</button>
 
-                @if ($canedit === 2)
-                    <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
-                        class="mr-1 mb-1 btn btn-warning">Редактировать
-                        информацию</a>
-                @endif
-
-                @if ($canedit ===2 xor)
-                    
-                @endif
-                <!-- Модалька подтверждения удаления -->
-                <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel" aria-hidden="true">
-                    <form class="modal-dialog" action="{{ route('projectDelete', ['url' => $project->url]) }}"
-                        method="POST">
-                        @csrf
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите удалить
-                                    проект?</h1>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                Это действие нельзя будет отменить. Все упоминания о проекте на сайте исчезнут,
-                                некоторая
-                                информация будет безвозвратно утрачена.
-                                <div class="form-floating mt-3">
-                                    <input type="password" name="password" class="form-control" id="floatingPassword"
-                                        placeholder="Password">
-                                    <label for="floatingPassword">Для подтверждения введите пароль.</label>
+                    <!-- Модалька подтверждения удаления -->
+                    <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel" aria-hidden="true">
+                        <form class="modal-dialog" action="{{ route('projectDelete', ['url' => $project->url]) }}"
+                            method="POST">
+                            @csrf
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите удалить
+                                        проект?</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Это действие нельзя будет отменить. Все упоминания о проекте на сайте исчезнут,
+                                    некоторая
+                                    информация будет безвозвратно утрачена.
+                                    <div class="form-floating mt-3">
+                                        <input type="password" name="password" class="form-control" id="floatingPassword"
+                                            placeholder="Password">
+                                        <label for="floatingPassword">Для подтверждения введите пароль.</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Нет</button>
+                                    <button type="submit" class="btn btn-danger">Да</ф>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Нет</button>
-                                <button type="submit" class="btn btn-danger">Да</ф>
-                            </div>
-                        </div>
-                    </form>
-            @endif
+                        </form>
+                @endif
+            @endauth
         </div>
         {{-- Информация о проекте --}}
         <div class="mb-2">
@@ -147,7 +150,9 @@
                 <a href="{{ route('devteam', ['url' => $project->author_mask_url]) }}" class="d-block">
                     {!! $project->author_mask !!}
                 </a>
-            @elseif ($project->author)
+            @elseif ($project->author === null)
+                <i class="text-secondary">Автор удалил свой аккаунт.</i>
+            @else
                 <a href="{{ route('user', ['login' => $project->author]) }}" class="d-block">
                     {!! $project->author !!}
                 </a>

@@ -12,11 +12,6 @@
         @endif
         <h2 class="text-primary">
             {{ $team->name }}
-            @if ($team->banned)
-                <i class="text-secondary">
-                    (Пользователь забанен)
-                </i>
-            @endif
         </h2>
         <div class="mb-3">
             @auth
@@ -92,7 +87,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="filesMultiple" class="form-label">Изображения</label>
-                                        <input class="form-control" type="file" id="filesMultiple" name="images"
+                                        <input class="form-control" type="file" id="filesMultiple" name="images[]"
                                             multiple>
                                     </div>
                                     <div class="form-check">
@@ -111,97 +106,98 @@
                         </div>
                     </form>
                     <a href="{{ route('projectNew') }}" class="btn btn-success mb-1">+ Новый проект</a>
-                    @if ($canedit < 2)
-                        {{-- Триггер модальки подтверждения --}}
-                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                            data-bs-target="#exitTeam">
-                            Покинуть команду
-                        </button>
+                @endif
+                @if ($canedit === 1)
+                    {{-- Триггер модальки подтверждения --}}
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#exitTeam">
+                        Покинуть команду
+                    </button>
 
-                        {{-- Модалька подтверждения --}}
-                        <div class="modal fade" id="exitTeam" tabindex="-1" aria-labelledby="exitTeamLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exitTeamLabel">Вы уверены?</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Закрыть"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Вы точно хотите выйти из команды {{ $team->name }}?
-                                        <br>
-                                        Это действие нельзя быдет отменить.
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary"
-                                            data-bs-dismiss="modal">Отмена</button>
-                                        <a href="{{ route('exit', ['team' => $team->id]) }}"
-                                            class="btn btn-secondary">Да, я
-                                            уверен</a>
-                                    </div>
+                    {{-- Модалька подтверждения --}}
+                    <div class="modal fade" id="exitTeam" tabindex="-1" aria-labelledby="exitTeamLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exitTeamLabel">Вы уверены?</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Закрыть"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Вы точно хотите выйти из команды {{ $team->name }}?
+                                    <br>
+                                    Это действие нельзя быдет отменить.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"
+                                        data-bs-dismiss="modal">Отмена</button>
+                                    <a href="{{ route('exit', ['team' => $team->id]) }}" class="btn btn-secondary">Да, я
+                                        уверен</a>
                                 </div>
                             </div>
                         </div>
-                    @endif
-                    @if ($canedit === 2)
-                        {{-- Триггер модальки настройки аватарки --}}
-                        <button class="btn btn-primary mb-1" data-bs-toggle="modal"
-                            data-bs-target="#avatarModal">Настройка
-                            аватара</button>
-                        {{-- Ссылка на редактор --}}
-                        <a href="{{ route('devteamEditor', ['url' => $team->url]) }}"
-                            class="btn btn-warning mb-1">Редактировать
-                            информацию</a>
-                        {{-- Триггер модальки удаления --}}
-                        <button class="btn btn-danger mb-1" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
-                            команду</button>
-                        {{-- Модалька обновления аватарки --}}
-                        <div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form action="{{ route('teamAvatarUpdate', ['url' => $team->url]) }}" method="POST"
-                                        enctype="multipart/form-data">
-                                        @csrf
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="avatarModalLabel">Обновить аватар</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <input class="form-control" type="file" id="formFile"
-                                                    name="avatar">
-                                                <small class="text-secondary"><i>Старые аватарки не
-                                                        сохраняются;</i></small><br>
-                                                <small class="text-secondary"><i>Поддерживаемые форматы: .jpg,
-                                                        .jpeg, .png, .gif;</i></small>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary">Обновить аватар</button>
-                                            <a href="{{ route('teamAvatarDelete', ['url' => $team->url]) }}"
-                                                class="btn btn-danger">Удалить аватар</a>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        {{-- Модалька подтверждения удаления команды --}}
-                        <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel"
-                            aria-hidden="true">
-                            <form class="modal-dialog" action="{{ route('userdelete') }}" method="POST">
-                                @csrf
-                                <div class="modal-content">
+                    </div>
+                @endif
+                @if ($canedit === 2)
+                    {{-- Триггер модальки настройки аватарки --}}
+                    <button class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#avatarModal">Настройка
+                        аватара</button>
+                    {{-- Модалька обновления аватарки --}}
+                    <div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ route('teamAvatarUpdate', ['url' => $team->url]) }}" method="POST"
+                                    enctype="multipart/form-data">
+                                    @csrf
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите удалить
-                                            аккаунт?</h1>
+                                        <h5 class="modal-title" id="avatarModalLabel">Обновить аватар</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        Это действие нельзя будет отменить. Все упоминания о Вас на сайте исчезнут,
+                                        <div class="mb-3">
+                                            <input class="form-control" type="file" id="formFile" name="avatar">
+                                            <small class="text-secondary"><i>Старые аватарки не
+                                                    сохраняются;</i></small><br>
+                                            <small class="text-secondary"><i>Поддерживаемые форматы: .jpg,
+                                                    .jpeg, .png, .gif;</i></small>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Обновить аватар</button>
+                                        <a href="{{ route('teamAvatarDelete', ['url' => $team->url]) }}"
+                                            class="btn btn-danger">Удалить аватар</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- Ссылка на редактор --}}
+                    <a href="{{ route('devteamEditor', ['url' => $team->url]) }}"
+                        class="btn btn-warning mb-1">Редактировать
+                        информацию</a>
+                @endif
+                @auth
+                    @if ($canedit === 2 || auth()->user()->role_id >= 3)
+                        {{-- Триггер модальки удаления --}}
+                        <button class="btn btn-danger mb-1" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
+                            команду</button>
+                        {{-- Модалька подтверждения удаления команды --}}
+                        <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel"
+                            aria-hidden="true">
+                            <form class="modal-dialog" action="{{ route('devteamDelete', ['url' => $team->url]) }}"
+                                method="POST">
+                                @csrf
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите
+                                            расформировать команду?</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Это действие нельзя будет отменить. Все упоминания о команде на сайте исчезнут,
                                         некоторая
                                         информация будет безвозвратно утрачена.
                                         <div class="form-floating mt-3">
@@ -211,14 +207,13 @@
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-success"
-                                            data-bs-dismiss="modal">Нет</button>
+                                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Нет</button>
                                         <button type="submit" class="btn btn-danger">Да</button>
                                     </div>
                                 </div>
                             </form>
                     @endif
-                @endif
+                @endauth
         </div>
         <div class="d-flex flex-wrap justify-content-between mb-3">
             <span class="text-secondary">

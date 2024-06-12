@@ -360,14 +360,20 @@ class DevTeamController extends Controller
 
     public function destroy(Request $request, $url)
     {
-        $team = DevTeam::join('users', 'teams.author_id', '=', 'users.id')
-            ->select('teams.*', 'users.password')
-            ->where('url', $url)->first();
+        $author = DevToTeamConnection::leftJoin('users', 'dev_to_team_connections.developer_id', '=', 'users.id')
+            ->select('dev_to_team_connections.*', 'users.password')
+            ->where('role', 'Глава')
+            ->first();
 
-        if (Hash::check($request->password, $team->password)) {
+        $team = DevTeam::where('url', $url)->first();
+
+        if ($author === null xor Hash::check($request->password, $author->password)) {
             DevToTeamConnection::where('team_id', '=', $team->id)->delete();
-            DevTeam::where('url', $url)->delete();
+            $team->delete();
 
+            if ($author === null) {
+                return redirect()->route('devteams')->with('success', 'Команда расформирована.');
+            }
             return redirect()->route('user', ['login' => Auth::user()->login])->with('success', 'Спасибо, что были в команде с нами!');
         } else {
             return redirect()->route('devteam', ['url' => $team->url])->with('error', 'Неверный пароль');

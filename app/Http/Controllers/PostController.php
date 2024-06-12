@@ -146,7 +146,7 @@ class PostController extends Controller
             'cover.mimes' => 'Поддерживаемые форматы изображений: jpeg, png, jpg, gif.',
             'cover.max' => 'Максимальный размер изображения: 2048 КБ.',
         ]);
-
+ 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -277,8 +277,8 @@ class PostController extends Controller
     // Обработка изображений
     private function multiloadMedia($data, $post_id)
     {
-        if ($data->hasFile('media')) {
-            $files = $data->file('media');
+        if ($data->hasFile('images')) {
+            $files = $data->file('images');
             $fileNames = [];
 
             $counter = 1;
