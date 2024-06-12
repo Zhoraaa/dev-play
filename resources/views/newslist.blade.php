@@ -131,7 +131,7 @@
                         {{ $buglist ? 'Смотреть подробнее' : 'Перейти к обсуждению' }} →
                     </a>
                     @auth
-                        @if ($post->author_id === auth()->user()->id || auth()->user()->role >= 3)
+                        @if ($post->author_id === auth()->user()->id || auth()->user()->role_id >= 3)
                             <a href="{{ route('postDel', ['id' => $post->id]) }}" class="btn btn-outline-danger">
                                 Удалить {{ $buglist ? 'отчёт' : 'пост' }}
                             </a>

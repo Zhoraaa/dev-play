@@ -119,14 +119,14 @@
                                 @endif
                                 <p class="mb-0">
                                     <i>
-                                        {{ $project->author_team }} (Команда разработчиков)
+                                        {{ $project->author_team }}
                                     </i>
                                 </p>
                             </a>
                         @else
                             @php
                                 $link = $project->author ? route('user', ['login' => $project->author]) : null;
-                                $linkText = $project->author ? $project->author . '(Разработчик)' : 'Пользователь удалил аккаунт';
+                                $linkText = $project->author ? $project->author : 'Пользователь удалил аккаунт';
                             @endphp
                             <a href="{{ $link }}"
                                 class="d-flex flex-wrap align-items-center mb-2 text-decoration-none text-secondary">
