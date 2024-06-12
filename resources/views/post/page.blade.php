@@ -66,7 +66,7 @@
             {{-- Триггер модальки с медиа --}}
             <div data-bs-toggle="modal" data-bs-target="#mediaFiles">
                 @foreach ($media_files as $media_file)
-                    <img src="{{ asset('storage/imgs/posts/media/' . $media_file) }}" class="shadow-sm m-1"
+                    <img src="{{ asset('storage/posts/' . $media_file) }}" class="shadow-sm m-1"
                         alt="{{ $media_file }}" style="height: 100px; cursor: pointer">
                 @endforeach
             </div>
@@ -88,7 +88,7 @@
                                     @foreach ($media_files as $key => $media_file)
                                         <div class="carousel-item {{ $key === 0 ? 'active' : null }}">
                                             <div class="w-100 carousel-img-wrapper">
-                                                <img src="{{ asset('storage/imgs/posts/media/' . $media_file) }}"
+                                                <img src="{{ asset('storage/posts/' . $media_file) }}"
                                                     class="d-block shadow" alt="{{ $media_file }}">
                                             </div>
                                         </div>

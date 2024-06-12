@@ -48,8 +48,8 @@
         <p class="mt-3 mb-3">
             {!! $snapshot->description !!}
         </p>
-        <div class="d-flex flex-wrap justify-content-between">
-            <p class="text-secondary d-block">
+        <div class="d-flex flex-wrap justify-content-between border-bottom mb-3">
+            <p class="text-secondary d-block mb-1">
                 Основной проект:
             </p>
             <i class="text-secondary d-block">
@@ -58,8 +58,8 @@
                 </a>
             </i>
         </div>
-        <div class="d-flex flex-wrap justify-content-between">
-            <p class="text-secondary d-block">
+        <div class="d-flex flex-wrap justify-content-between border-bottom mb-3">
+            <p class="text-secondary d-block mb-1">
                 Версия опубликована:
             </p>
             <span class="d-block">

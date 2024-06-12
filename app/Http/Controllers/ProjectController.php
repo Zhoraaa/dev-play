@@ -28,7 +28,7 @@ class ProjectController extends Controller
     public function index($url)
     {
         $project = Project::where('projects.url', $url)
-            ->join('users', 'users.id', 'projects.author_id')
+            ->leftJoin('users', 'users.id', 'projects.author_id')
             ->leftJoin('dev_teams', 'dev_teams.id', 'projects.team_rights_id')
             ->select(
                 'projects.*',

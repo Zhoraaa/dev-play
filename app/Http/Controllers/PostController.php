@@ -286,7 +286,7 @@ class PostController extends Controller
             foreach ($files as $file) {
                 // Генерация имени файла
                 $fileName = 'post_' . $post_id . '_img_' . $counter . '_' . $file->getClientOriginalName();
-                $mediaPath = $file->storeAs('app/imgs/posts/media/', $fileName);
+                $mediaPath = $file->storeAs('public/posts/', $fileName);
 
                 // Сохранение пути файла для дальнейшего использования
                 $fileNames[] = $fileName;

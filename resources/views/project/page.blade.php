@@ -87,10 +87,11 @@
                     <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
                         class="mr-1 mb-1 btn btn-warning">Редактировать
                         информацию</a>
-                    <button class="mr-1 mb-1 btn btn-danger" data-bs-toggle="modal" data-bs-target="#areYouSure">Удалить
-                        проект</button>
                 @endif
 
+                @if ($canedit ===2 xor)
+                    
+                @endif
                 <!-- Модалька подтверждения удаления -->
                 <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel" aria-hidden="true">
                     <form class="modal-dialog" action="{{ route('projectDelete', ['url' => $project->url]) }}"
@@ -99,7 +100,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h1 class="modal-title fs-5" id="areYouSureLabel">Вы действительно хотите удалить
-                                    аккаунт?</h1>
+                                    проект?</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                             </div>
@@ -122,7 +123,7 @@
             @endif
         </div>
         {{-- Информация о проекте --}}
-        <div class="mb-2 d-flex flex-wrap justify-content-between">
+        <div class="mb-2">
             <h2>
                 {{ $project->name }}
             </h2>
@@ -138,23 +139,27 @@
         </p>
 
 
-        <div class="d-flex flex-wrap justify-content-between">
-            <p class="text-secondary d-block">
+        <div class="d-flex flex-wrap justify-content-between border-bottom mb-2">
+            <p class="text-secondary d-block mb-1">
                 Авторство:
             </p>
             @if ($project->author_mask)
                 <a href="{{ route('devteam', ['url' => $project->author_mask_url]) }}" class="d-block">
                     {!! $project->author_mask !!}
                 </a>
-            @else
+            @elseif ($project->author)
                 <a href="{{ route('user', ['login' => $project->author]) }}" class="d-block">
                     {!! $project->author !!}
                 </a>
+            @else
+                <i class="text-secondary">
+                    Автор удалил аккаунт
+                </i>
             @endif
         </div>
         @if ($taglist != '.')
-            <div class="d-flex flex-wrap justify-content-between">
-                <p class="text-secondary d-block">
+            <div class="d-flex flex-wrap justify-content-between border-bottom mb-3">
+                <p class="text-secondary d-block mb-1">
                     Теги:
                 </p>
                 <i class="text-secondary d-block">
@@ -162,8 +167,8 @@
                 </i>
             </div>
         @endif
-        <div class="d-flex flex-wrap justify-content-between">
-            <p class="text-secondary d-block">
+        <div class="d-flex flex-wrap justify-content-between border-bottom mb-3">
+            <p class="text-secondary d-block mb-1">
                 Проект создан:
             </p>
             <span class="d-block">
@@ -171,8 +176,8 @@
             </span>
         </div>
         @if ($snapshots->all())
-            <div class="d-flex flex-wrap justify-content-between">
-                <p class="text-secondary d-block">
+            <div class="d-flex flex-wrap justify-content-between border-bottom">
+                <p class="text-secondary d-block mb-1">
                     Последнее обновление:
                 </p>
                 <div>
