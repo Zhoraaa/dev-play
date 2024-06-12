@@ -26,23 +26,25 @@
                     <div class="col">{{ $user->role }}</div>
                     <div class="col">
                         @if (!$user->banned)
-                            @switch($user->role_id)
-                                @case(1)
-                                    <a href="{{ route('userEdit', ['id' => $user->id, 'changeRole' => 3]) }}"
-                                        class="btn btn-outline-warning">
-                                        Сделать модератором
-                                    </a>
-                                @break
+                            @if (auth()->user()->role_id === 4)
+                                @switch($user->role_id)
+                                    @case(1)
+                                        <a href="{{ route('userEdit', ['id' => $user->id, 'changeRole' => 3]) }}"
+                                            class="btn btn-outline-warning">
+                                            Дать права модератора
+                                        </a>
+                                    @break
 
-                                @case(3)
-                                    <a href="{{ route('userEdit', ['id' => $user->id, 'changeRole' => 1]) }}"
-                                        class="btn btn-outline-warning">
-                                        Снять с модерки
-                                    </a>
-                                @break
+                                    @case(3)
+                                        <a href="{{ route('userEdit', ['id' => $user->id, 'changeRole' => 1]) }}"
+                                            class="btn btn-outline-warning">
+                                            Забрать права модератора
+                                        </a>
+                                    @break
 
-                                @default
-                            @endswitch
+                                    @default
+                                @endswitch
+                            @endif
                             @if ($user->role_id !== 4)
                                 <a href="{{ route('userEdit', ['id' => $user->id, 'ban' => true]) }}"
                                     class="btn btn-outline-danger">

@@ -60,7 +60,7 @@ class SnapshotsController extends Controller
             ->get();
 
         $canedit = Auth::user() && $snapshot->author_id == Auth::user()->id ? true : false;
-
+ 
         return view('snapshot.page', [
             'url' => $url,
             'snapshot' => $snapshot,

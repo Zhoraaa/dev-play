@@ -45,7 +45,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="filesMultiple" class="form-label">Изображения</label>
-                                <input class="form-control" type="file" id="filesMultiple" name="media[]" multiple>
+                                <input class="form-control" type="file" id="filesMultiple" name="images[]" multiple>
                             </div>
                         </div>
                         <div class="modal-footer">
