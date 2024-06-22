@@ -156,10 +156,6 @@
                 <a href="{{ route('user', ['login' => $project->author]) }}" class="d-block">
                     {!! $project->author !!}
                 </a>
-            @else
-                <i class="text-secondary">
-                    Автор удалил аккаунт
-                </i>
             @endif
         </div>
         @if ($taglist != '.')
