@@ -17,6 +17,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+// // Руты для тестирования, быстрая смена роли пользователя
 // Route::get('/role-switch/{role}', function ($role) {
 //     Auth::user()->update([
 //         'role_id' => $role

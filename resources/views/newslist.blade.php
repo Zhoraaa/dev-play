@@ -22,7 +22,8 @@
 
             {{-- Модалька нового поста --}}
             <form action="{{ route('postSave', ['from_team' => 0, 'team' => 0]) }}" enctype="multipart/form-data" method="post"
-                class="modal fade" id="postEditorModal" tabindex="-1" aria-labelledby="postEditorModalLabel" aria-hidden="true">
+                class="modal fade" id="postEditorModal" tabindex="-1" aria-labelledby="postEditorModalLabel"
+                aria-hidden="true">
                 @csrf
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -63,27 +64,35 @@
         @foreach ($news as $post)
             <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                    {{-- Автор - команда --}}
                     @if ($post->author_mask)
-                        <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
-                            class="d-flex flex-wrap align-items-center text-decoration-none">
-                            @if ($post->showing_author_avatar)
-                                <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
-                                    <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
-                                        alt="">
-                                </div>
-                            @endif
-                            <div>
-                                <h5 class="link-primary">
+                        <div class="d-flex flex-wrap justify-content-start">
+                            <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
+                                class="d-flex flex-wrap align-items-center text-decoration-none">
+                                {{-- Проверка наличия аватарки --}}
+                                @if ($post->showing_author_avatar)
+                                    <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
+                                        <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
+                                            alt="">
+                                    </div>
+                                @endif
+                                <h5 class="d-block" style="margin-right:5px">
                                     {{ $post->showing_author }}
-                                    @if ($post->show_true_author)
-                                        <i class="text-secondary fw-light">
-                                            ({{ $post->author }})
-                                        </i>
-                                    @endif
                                 </h5>
-                            </div>
-                        </a>
+                            </a>
+                            {{-- Надо показать настоящего автора --}}
+                            @if ($post->show_true_author)
+                                <a href="{{ route('user', ['login' => $post->author]) }}" class="text-decoration-none">
+                                    <h5>
+                                    <i class="text-secondary fw-light">
+                                        ({{ $post->author }})
+                                    </i>
+                                    </h5>
+                                </a>
+                            @endif
+                        </div>
                     @else
+                        {{-- Автор - пользователь --}}
                         <a href="{{ route('user', ['login' => $post->author]) }}"
                             class="d-flex flex-wrap align-items-center text-decoration-none">
                             @if ($post->avatar)
