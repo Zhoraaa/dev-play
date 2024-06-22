@@ -12,33 +12,64 @@
     {{-- Основная статья --}}
     <div class="w-75 m-auto mb-1 p-2 rounded border border-dark">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            @if ($post->show_true_author === 1)
-                {{-- Разработчик как автор --}}
-                <a href="{{ route('user', ['login' => $post->author]) }}" class="d-flex flex-wrap align-items-center">
+            {{-- Автор - команда --}}
+            @if ($post->author_mask)
+                <div class="d-flex flex-wrap justify-content-start">
+                    <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
+                        class="d-flex flex-wrap align-items-center text-decoration-none">
+                        {{-- Проверка наличия аватарки --}}
+                        @if ($post->showing_author_avatar)
+                            <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
+                                <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
+                                    alt="">
+                            </div>
+                        @endif
+                        <h5 class="d-block" style="margin-right:5px">
+                            {{ $post->showing_author }}
+                        </h5>
+                    </a>
+                    {{-- Надо показать настоящего автора --}}
+                    @if ($post->show_true_author)
+                        <a href="{{ route('user', ['login' => $post->author]) }}" class="text-decoration-none">
+                            <h5>
+                                <i class="text-secondary fw-light">
+                                    ({{ $post->author }})
+                                </i>
+                            </h5>
+                        </a>
+                    @endif
+                </div>
+            @else
+                {{-- Автор - пользователь --}}
+                <a href="{{ route('user', ['login' => $post->author]) }}"
+                    class="d-flex flex-wrap align-items-center text-decoration-none">
                     @if ($post->avatar)
                         <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
                             <img src="{{ asset('storage/imgs/users/avatars/' . $post->avatar) }}" alt="">
                         </div>
                     @endif
                     <div>
-                        <h5>
+                        @php
+                            switch ($post->role_id) {
+                                default:
+                                    $nickStyle = 'primary';
+                                    break;
+
+                                case 2:
+                                    $nickStyle = 'success';
+                                    break;
+
+                                case 3:
+                                    $nickStyle = 'warning';
+                                    break;
+
+                                case 4:
+                                    $nickStyle = 'danger';
+                                    break;
+                            }
+                        @endphp
+                        <h5 class="link-{{ $nickStyle }}">
                             {{ $post->author }}
-                        </h5>
-                    </div>
-                </a>
-            @else
-                {{-- Команда как автор --}}
-                <a href="{{ route('devteam', ['url' => $post->showing_author_url]) }}"
-                    class="d-flex flex-wrap align-items-center">
-                    @if ($post->showing_author_avatar)
-                        <div class="avatar rounded-circle avatar-medium" style="margin-right: 10px">
-                            <img src="{{ asset('storage/imgs/teams/avatars/' . $post->showing_author_avatar) }}"
-                                alt="">
-                        </div>
-                    @endif
-                    <div>
-                        <h5>
-                            {{ $post->showing_author }}
                         </h5>
                     </div>
                 </a>
@@ -66,8 +97,8 @@
             {{-- Триггер модальки с медиа --}}
             <div data-bs-toggle="modal" data-bs-target="#mediaFiles">
                 @foreach ($media_files as $media_file)
-                    <img src="{{ asset('storage/posts/' . $media_file) }}" class="shadow-sm m-1"
-                        alt="{{ $media_file }}" style="height: 100px; cursor: pointer">
+                    <img src="{{ asset('storage/posts/' . $media_file) }}" class="shadow-sm m-1" alt="{{ $media_file }}"
+                        style="height: 100px; cursor: pointer">
                 @endforeach
             </div>
 

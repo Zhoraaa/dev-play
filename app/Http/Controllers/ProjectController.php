@@ -221,7 +221,7 @@ class ProjectController extends Controller
             'cover' => null,
             'url' => $data->url,
             'author_id' => Auth::user()->id,
-            'team_rights_id' => $data->team === 'Дать доступ команде' ? null : $data->team,
+            'team_rights_id' => $data->team != 'null' ? $data->team : null,
             'updated_at' => now()
         ]);
 

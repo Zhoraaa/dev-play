@@ -217,6 +217,35 @@ class PostController extends Controller
         return redirect()->route('news')->with('success', 'Пост удалён.');
     }
 
+    // Обработка изображений
+    private function multiloadMedia($data, $post_id)
+    {
+        if ($data->hasFile('images')) {
+            $files = $data->file('images');
+            $fileNames = [];
+
+            $counter = 1;
+
+            foreach ($files as $file) {
+                // Генерация имени файла
+                $fileName = 'post_' . $post_id . '_img_' . $counter . '_' . $file->getClientOriginalName();
+                $mediaPath = $file->storeAs('public/posts/', $fileName);
+
+                // Сохранение пути файла для дальнейшего использования
+                $fileNames[] = $fileName;
+
+                // Сохранение в базе данных
+                PostMedia::create([
+                    'post_id' => $post_id,
+                    'author_id' => Auth::user()->id,
+                    'file_name' => $fileName,
+                    'created_at' => false
+                ]);
+                $counter++;
+            }
+        }
+    }
+    
     // Обработчики текста
     private function handle($rawText, $style_code)
     {
@@ -274,32 +303,4 @@ class PostController extends Controller
         return $processedText;
     }
 
-    // Обработка изображений
-    private function multiloadMedia($data, $post_id)
-    {
-        if ($data->hasFile('images')) {
-            $files = $data->file('images');
-            $fileNames = [];
-
-            $counter = 1;
-
-            foreach ($files as $file) {
-                // Генерация имени файла
-                $fileName = 'post_' . $post_id . '_img_' . $counter . '_' . $file->getClientOriginalName();
-                $mediaPath = $file->storeAs('public/posts/', $fileName);
-
-                // Сохранение пути файла для дальнейшего использования
-                $fileNames[] = $fileName;
-
-                // Сохранение в базе данных
-                PostMedia::create([
-                    'post_id' => $post_id,
-                    'author_id' => Auth::user()->id,
-                    'file_name' => $fileName,
-                    'created_at' => false
-                ]);
-                $counter++;
-            }
-        }
-    }
 }

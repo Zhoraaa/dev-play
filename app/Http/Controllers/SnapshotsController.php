@@ -230,6 +230,38 @@ class SnapshotsController extends Controller
         }
     }
 
+    // Обработка изображений
+    private function multiloadMedia($data, $proj_id, $path, $field, $downloadable, $snapshot)
+    {
+        if ($data->hasFile($field)) {
+            $files = $data->file($field);
+            $fileNames = [];
+
+            $counter = 1;
+
+            foreach ($files as $file) {
+                // Генерация имени файла
+                $fileName = 'proj_' . $proj_id . '_file_' . $counter . '_' . $file->getClientOriginalName();
+                $mediaPath = $file->storeAs('public/' . $path . $fileName);
+
+                // Сохранение пути файла для дальнейшего использования
+                $fileNames[] = $fileName;
+
+                // Сохранение в базе данных
+                ProjectMedia::create([
+                    'project_id' => $proj_id,
+                    'author_id' => Auth::user()->id,
+                    'file_name' => $fileName,
+                    'snapshot_id' => $snapshot,
+                    'for_download' => $downloadable,
+                    'created_at' => now()
+                ]);
+
+                $counter++;
+            }
+        }
+    }
+
 
     // Обработчики текста
     private function handle($rawText, $style_code)
@@ -288,36 +320,4 @@ class SnapshotsController extends Controller
         return $processedText;
     }
 
-
-    // Обработка изображений
-    private function multiloadMedia($data, $proj_id, $path, $field, $downloadable, $snapshot)
-    {
-        if ($data->hasFile($field)) {
-            $files = $data->file($field);
-            $fileNames = [];
-
-            $counter = 1;
-
-            foreach ($files as $file) {
-                // Генерация имени файла
-                $fileName = 'proj_' . $proj_id . '_file_' . $counter . '_' . $file->getClientOriginalName();
-                $mediaPath = $file->storeAs('public/' . $path . $fileName);
-
-                // Сохранение пути файла для дальнейшего использования
-                $fileNames[] = $fileName;
-
-                // Сохранение в базе данных
-                ProjectMedia::create([
-                    'project_id' => $proj_id,
-                    'author_id' => Auth::user()->id,
-                    'file_name' => $fileName,
-                    'snapshot_id' => $snapshot,
-                    'for_download' => $downloadable,
-                    'created_at' => now()
-                ]);
-
-                $counter++;
-            }
-        }
-    }
 }

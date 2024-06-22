@@ -2,7 +2,7 @@
 
 
 @section('title')
-    Редактирование проекта
+    Редактирование команды
 @endsection
 
 @section('body')

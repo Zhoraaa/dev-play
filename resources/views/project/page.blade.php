@@ -30,10 +30,10 @@
 
                 <a href="{{ route('buglist', ['project' => $project->url]) }}" class="btn btn-secondary">Найденные ошибки</a>
 
-                {{-- Триггер модальки нового поста --}}
+                {{-- Триггер модальки нового отчёта --}}
                 <button class="btn btn-outline-secondary mb-1" data-bs-toggle="modal" data-bs-target="#bugreport">Я нашёл
                     ошибку!</button>
-                {{-- Модалька нового поста --}}
+                {{-- Модалька нового отчёта --}}
                 <form action="{{ route('postSave', ['from_team' => 0, 'team' => 0]) }}" method="post" class="modal fade"
                     id="bugreport" tabindex="-1" aria-labelledby="bugreportLabel" aria-hidden="true">
                     @csrf
@@ -87,6 +87,41 @@
                 <a href="{{ route('projectEditor', ['url' => $project->url]) }}"
                     class="mr-1 mb-1 btn btn-warning">Редактировать
                     информацию</a>
+
+                {{-- Триггер модальки настройки обложки --}}
+                <button class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#avatarModal">Настройка
+                    обложки</button>
+                {{-- Модалька обновления обложки --}}
+                <div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ route('coverUpdate', ['url' => $project->url]) }}" method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="avatarModalLabel">Обновить обложку</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input class="form-control" type="file" id="formFile" name="cover">
+                                        <small class="text-secondary"><i>Старые обложки не
+                                                сохраняются;</i></small><br>
+                                        <small class="text-secondary"><i>Поддерживаемые форматы: .jpg,
+                                                .jpeg, .png, .gif;</i></small>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Обновить обложку</button>
+                                    <a href="{{ route('coverDelete', ['url' => $project->url]) }}"
+                                        class="btn btn-danger">Удалить обложку</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             @endif
             {{-- Редактирование и удаление информации --}}
             @auth
@@ -95,7 +130,8 @@
                         проект</button>
 
                     <!-- Модалька подтверждения удаления -->
-                    <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel" aria-hidden="true">
+                    <div class="modal fade" id="areYouSure" tabindex="-1" aria-labelledby="areYouSureLabel"
+                        aria-hidden="true">
                         <form class="modal-dialog" action="{{ route('projectDelete', ['url' => $project->url]) }}"
                             method="POST">
                             @csrf
